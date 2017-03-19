@@ -64,14 +64,14 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name="com.example.ajoan.events.activities.EventsListActivity"
-            android:label="Momento (list)"
+            android:label="Mood(list)"
             android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            </activity>
+        </activity>
     </application>
 
 </manifest>

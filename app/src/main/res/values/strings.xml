@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Momento</string>
+    <string name="app_name">Mood</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_event">EventActivity</string>
     <string name="title_activity_events_list">EventsListActivity</string>

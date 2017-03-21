@@ -59,6 +59,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+
+
+
         <activity
             android:name="com.example.ajoan.events.activities.EventActivity"
             android:label="@string/title_activity_event"
@@ -73,7 +77,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.ajoan.welcome.SignupActivity"></activity>
+        <activity android:name="com.example.ajoan.welcome.SignupActivity" android:label="SignUP">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

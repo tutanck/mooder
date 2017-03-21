@@ -13,8 +13,6 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -26,7 +24,6 @@ import com.android.volley.toolbox.Volley;
 import com.example.ajoan.MyApp;
 import com.example.ajoan.events.activities.EventActivity;
 import com.example.ajoan.events.activities.EventsListActivity;
-import com.example.ajoan.events.fragments.InputPanelFragment;
 import com.example.ajoan.momento.api.apis.DataIledefranceFr;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -38,8 +35,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-
-import android.location.Location;
 
 import org.json.JSONObject;
 

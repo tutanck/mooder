@@ -3,8 +3,9 @@
     package="com.example.ajoan.maps">
 
     <uses-sdk
-        android:maxSdkVersion="17"
-        android:minSdkVersion="8" />
+        android:maxSdkVersion="25"
+        android:targetSdkVersion="23"
+        android:minSdkVersion="19" />
 
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
@@ -65,13 +66,14 @@
         <activity
             android:name="com.example.ajoan.events.activities.EventsListActivity"
             android:label="Mood(list)"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="com.example.ajoan.welcome.SignupActivity"></activity>
     </application>
 
 </manifest>

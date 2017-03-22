@@ -1,17 +1,19 @@
 package com.example.ajoan.components;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android./**support.v4.*/app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -24,33 +26,35 @@ import com.example.ajoan.maps.R;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
  * Anagbla Joan */
-public class CustomInputFragment extends Fragment {
+public class CustomSubmitFragment extends Fragment {
 
     private Listener myListener;
     private Bundle config;
 
-    private TextView inputTitleTV;
-    private EditText inputET;
-    private TextView inputMsgTV;
+    private Button submitBtn;
 
     private RequestQueue queue;
-    private int requestCounter = 0;
+    private boolean onTheFly = false;
 
 
-    public CustomInputFragment() {
+    public CustomSubmitFragment() {
         // Required empty public constructor
     }
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        return inflater.inflate(R.layout.fragment_custom_input, container, false);
+        return inflater.inflate(R.layout.fragment_custom_submit, container, false);
     }
 
 
@@ -58,68 +62,52 @@ public class CustomInputFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        config =  getArguments();
+        config = getArguments();
 
-        //title tv
-        inputTitleTV = (TextView) view.findViewById(R.id.input_title);
-        if (config.getString("title") != null)
-            inputTitleTV.setText(config.getString("title"));
+        submitBtn = (Button) view.findViewById(R.id.submit);
+        if (config.getString("text") != null)
+            submitBtn.setText(config.getString("text"));
 
-        //et
-        inputET=(EditText)view.findViewById(R.id.input_et);
-        if (config.getString("hint") != null)
-            inputET.setHint(config.getString("hint"));
-        if (config.getInt("type") !=0)
-            inputET.setRawInputType(config.getInt("type"));
-
-        inputET.addTextChangedListener(new TextWatcher() {
+        submitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+            public void onClick(View v) {
+                if(!onTheFly && config.getString("url") != null) {
+                        JSONObject requestParameters = new JSONObject();
+                        try {
+                            for(Map.Entry<String,EditText> entry : myListener.getFormInputs().entrySet())
+                                requestParameters.put(entry.getKey(),entry.getValue().getText());
+                        } catch (JSONException e) {
+                            //TODO REPLACE BY E.getMYStacktrace and my own logger
+                            Log.i("CustomInputFragment", "/onTextChanged", e);
+                        }
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (config.getString("url") != null && config.getString("reqParamName") != null){
-                    queue = Volley.newRequestQueue((Context)myListener); //private bus driver
-                    try {
+                        queue = Volley.newRequestQueue((Context) myListener); //private bus driver
+
                         Log.i("CustomInputFragment", "Sending request to " + config.getString("url") +
-                                " with param {" + config.getString("reqParamName") + ":" + inputET.getText() + "}");
-                        queue.cancelAll(requestCounter); //cancel the previous request
+                                " with params "+requestParameters);
                         queue.add((JsonObjectRequest)
                                 new JsonObjectRequest(
-                                        Request.Method.GET, config.getString("url"),
-                                        new JSONObject().put(
-                                                config.getString("reqParamName")
-                                                , inputET.getText()
-                                        ),
+                                        Request.Method.POST, config.getString("url"),
+                                        requestParameters,
                                         new Response.Listener<JSONObject>() {
                                             @Override
                                             public void onResponse(JSONObject response) {
-                                                inputMsgTV.setText("Response: " + response.toString());
+                                                onTheFly = false;
+                                                //TODO
                                             }
                                         },
                                         new Response.ErrorListener() {
                                             @Override
                                             public void onErrorResponse(VolleyError error) {
+                                                onTheFly = false;
+                                                //TODO
                                             }
-                                        }).setTag(requestCounter++)
+                                        })
                         );
-                    } catch (JSONException e) {
-                        //TODO REPLACE BY E.getMYStacktrace and my own logger
-                        Log.i("CustomInputFragment", "/onTextChanged", e);
+                        onTheFly = true;
                     }
-
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
             }
         });
-
-        //msg tv
-        inputMsgTV = (TextView) view.findViewById(R.id.input_msg);
-        inputMsgTV.setText("");//reset message to no message (default)
     }
 
 
@@ -128,12 +116,14 @@ public class CustomInputFragment extends Fragment {
     ){
         LinkedHashMap<Fragment,Bundle> map = new LinkedHashMap<>();
         for(Bundle bundle : configs)
-            map.put(new CustomInputFragment(),bundle);
+            map.put(new CustomSubmitFragment(),bundle);
         return map;
     }
 
 
-    public interface Listener { }
+    public interface Listener {
+        Map<String,EditText> getFormInputs();
+    }
 
 
     @Override

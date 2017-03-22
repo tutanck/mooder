@@ -16,7 +16,7 @@
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="50dp"
         android:textAlignment="center"
         android:textSize="25dp"
         android:text="Comment te reconnaître ?" />

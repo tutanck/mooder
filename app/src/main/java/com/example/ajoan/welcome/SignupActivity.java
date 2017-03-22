@@ -8,9 +8,15 @@ import com.example.ajoan.components.CustomInputFragment;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.FragmentInjecter;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static android.text.InputType.TYPE_CLASS_TEXT;
+import static android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+import static android.text.InputType.TYPE_TEXT_VARIATION_PERSON_NAME;
 
 public class SignupActivity extends AppCompatActivity implements CustomInputFragment.Listener {
 
@@ -19,15 +25,17 @@ public class SignupActivity extends AppCompatActivity implements CustomInputFrag
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
-        Bundle conf1 = new Bundle();
-        conf1.putString("title", "title1");
-        conf1.putString("hint", "hint1");
+        Bundle username = new Bundle();
+        username.putString("title", "Nom d'utilisateur");
+        username.putString("hint", "Choisis ton nom sur Mood");
+        username.putInt("type",TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PERSON_NAME);
 
-        Bundle conf2 = new Bundle();
-        conf2.putString("title", "title2");
-        conf2.putString("hint", "hint2");
+        Bundle email = new Bundle();
+        email.putString("title", "Email");
+        email.putString("hint", "Entre ton adresse email");
+        email.putInt("type",TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
 
-        List<Bundle> configs = Arrays.asList(conf1, conf2);
+        List<Bundle> configs = Arrays.asList(email,username); //order matters : order on screen
         List<Fragment> fragments = new ArrayList<>();
 
         if (savedInstanceState != null)

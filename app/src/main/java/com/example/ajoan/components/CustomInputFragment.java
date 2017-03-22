@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.example.ajoan.maps.R;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,8 +26,11 @@ public class CustomInputFragment extends Fragment {
 
     private Listener myListener;
 
-    private EditText inputET;
     private TextView inputTitleTV;
+    private EditText inputET;
+    private TextView inputMsgTV;
+    private Bundle config;
+
 
     public CustomInputFragment() {
         // Required empty public constructor
@@ -38,32 +42,54 @@ public class CustomInputFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_custom_input, container, false);
     }
 
+
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        config =  getArguments();
+
+        //title tv
+        inputTitleTV = (TextView) view.findViewById(R.id.input_title);
+        if (config.getString("title") != null)
+            inputTitleTV.setText(config.getString("title"));
+
+        //et
         inputET=(EditText)view.findViewById(R.id.input_et);
-        inputET.setText( getArguments().getString("hint") );
+        if (config.getString("hint") != null)
+            inputET.setHint(config.getString("hint"));
+        if (config.getInt("type") !=0)
+            inputET.setRawInputType(config.getInt("type"));
+
         inputET.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-            @Override public void afterTextChanged(Editable s) {}
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
         });
 
-        inputTitleTV = (TextView) view.findViewById(R.id.input_title);
-        inputTitleTV.setText(getArguments().getString("title"));
+
+        //msg tv
+        inputMsgTV = (TextView) view.findViewById(R.id.input_msg);
+
     }
 
 
-    public static Map<Fragment,Bundle> installConfigs(
+    public static LinkedHashMap<Fragment,Bundle> installConfigs(
             List<Bundle> configs
     ){
-        Map<Fragment,Bundle> map = new HashMap<>();
+        LinkedHashMap<Fragment,Bundle> map = new LinkedHashMap<>();
         for(Bundle bundle : configs)
             map.put(new CustomInputFragment(),bundle);
         return map;
     }
-
 
 
     public interface Listener { }
@@ -84,4 +110,5 @@ public class CustomInputFragment extends Fragment {
         super.onDetach();
         myListener = null;
     }
+
 }

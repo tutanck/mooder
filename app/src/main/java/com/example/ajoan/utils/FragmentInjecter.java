@@ -8,6 +8,7 @@ import android.os.Bundle;
 import com.example.ajoan.components.CustomInputFragment;
 import com.example.ajoan.maps.R;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public class FragmentInjecter {
     public static void inject(
             int activityID,
             FragmentManager fragmentManager,
-            Map<Fragment,Bundle> fragmentConfigs,
+            LinkedHashMap<Fragment,Bundle> fragmentConfigs,
             String activityName
     ){
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();

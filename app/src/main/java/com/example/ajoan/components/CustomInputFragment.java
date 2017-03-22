@@ -6,18 +6,26 @@ import android.support.annotation.Nullable;
 import android./**support.v4.*/app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.ajoan.maps.R;
 
-import java.util.HashMap;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -30,6 +38,9 @@ public class CustomInputFragment extends Fragment {
     private EditText inputET;
     private TextView inputMsgTV;
     private Bundle config;
+
+    private RequestQueue queue;
+    private int requestCounter = 0;
 
 
     public CustomInputFragment() {
@@ -68,6 +79,37 @@ public class CustomInputFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (config.getString("url") != null && config.getString("reqParamName") != null){
+                    queue = Volley.newRequestQueue((Context)myListener); //private bus driver
+                    try {
+                        Log.i("CustomInputFragment", "Sending request to " + config.getString("url") +
+                                " with param {" + config.getString("reqParamName") + ":" + inputET.getText() + "}");
+                        queue.cancelAll(requestCounter); //cancel the previous request
+                        queue.add((JsonObjectRequest)
+                                new JsonObjectRequest(
+                                        Request.Method.GET, config.getString("url"),
+                                        new JSONObject().put(
+                                                config.getString("reqParamName")
+                                                , inputET.getText()
+                                        ),
+                                        new Response.Listener<JSONObject>() {
+                                            @Override
+                                            public void onResponse(JSONObject response) {
+                                                inputMsgTV.setText("Response: " + response.toString());
+                                            }
+                                        },
+                                        new Response.ErrorListener() {
+                                            @Override
+                                            public void onErrorResponse(VolleyError error) {
+                                            }
+                                        }).setTag(requestCounter++)
+                        );
+                    } catch (JSONException e) {
+                        //TODO REPLACE BY E.getMYStacktrace and my own logger
+                        Log.i("CustomInputFragment", "/onTextChanged", e);
+                    }
+
+                }
             }
 
             @Override
@@ -75,10 +117,9 @@ public class CustomInputFragment extends Fragment {
             }
         });
 
-
         //msg tv
         inputMsgTV = (TextView) view.findViewById(R.id.input_msg);
-
+        inputMsgTV.setText("");//reset message to no message (default)
     }
 
 

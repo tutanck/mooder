@@ -20,6 +20,8 @@ import static android.text.InputType.TYPE_TEXT_VARIATION_PERSON_NAME;
 
 public class SignupActivity extends AppCompatActivity implements CustomInputFragment.Listener {
 
+    private String inputListener = "http:localhost:8080/input/checkout";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,11 +31,15 @@ public class SignupActivity extends AppCompatActivity implements CustomInputFrag
         username.putString("title", "Nom d'utilisateur");
         username.putString("hint", "Choisis ton nom sur Mood");
         username.putInt("type",TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PERSON_NAME);
+        username.putString("url",inputListener);
+        username.putString("reqParamName","username");
 
         Bundle email = new Bundle();
         email.putString("title", "Email");
         email.putString("hint", "Entre ton adresse email");
         email.putInt("type",TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        email.putString("url",inputListener);
+        email.putString("reqParamName","email");
 
         List<Bundle> configs = Arrays.asList(email,username); //order matters : order on screen
         List<Fragment> fragments = new ArrayList<>();

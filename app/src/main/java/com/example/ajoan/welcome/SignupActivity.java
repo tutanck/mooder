@@ -1,11 +1,16 @@
 package com.example.ajoan.welcome;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 import com.example.ajoan.components.CustomInputFragment;
 import com.example.ajoan.components.CustomSubmitFragment;
 import com.example.ajoan.maps.R;
@@ -23,14 +28,25 @@ import static android.text.InputType.TYPE_CLASS_TEXT;
 import static android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
 import static android.text.InputType.TYPE_TEXT_VARIATION_PERSON_NAME;
 
-public class SignupActivity extends AppCompatActivity implements
-        CustomInputFragment.Listener,CustomSubmitFragment.Listener {
+public class SignupActivity
+        extends AppCompatActivity implements
+        CustomInputFragment.Listener,
+        CustomSubmitFragment.Listener {
+
+    private Context meGod=this;
 
     private String inputListener = "http:localhost:8080/input/checkout";
 
+    public final static String USERMAIL ="email";
+    public final static String USERNAME ="username";
+
     private Map<String,EditText> mapInputsET = new HashMap<>();
-    private Map<String,TextView> mapInputsTitleTV = new HashMap<>();
     private Map<String,TextView> mapInputsMSGTV = new HashMap<>();
+
+    private Map<String,Boolean> mapInputsTrafficLight = new HashMap<>();
+
+    private Bundle usernameConfig = new Bundle();
+    private Bundle emailConfig = new Bundle();
 
     private List<Fragment> myFragments = new ArrayList<>();
 
@@ -39,21 +55,19 @@ public class SignupActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
-        Bundle usernameConfig = new Bundle();
         usernameConfig.putString("title", "Nom d'utilisateur");
         usernameConfig.putString("hint", "Choisis ton nom sur Mood");
         usernameConfig.putInt("type",TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PERSON_NAME);
         usernameConfig.putString("url",inputListener);
-        usernameConfig.putString("reqParamName","username");
+        usernameConfig.putString("reqParamName",USERNAME);
         usernameConfig.putString("rule","((?=.*[a-z])^[a-zA-Z](\\w{2,}))");
         usernameConfig.putString("manual","Un nom d'utilisateur contient au moins 3 caractères et commence par une lettre");
 
-        Bundle emailConfig = new Bundle();
         emailConfig.putString("title", "Email");
         emailConfig.putString("hint", "Entre ton adresse email");
         emailConfig.putInt("type",TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
         emailConfig.putString("url",inputListener);
-        emailConfig.putString("reqParamName","email");
+        emailConfig.putString("reqParamName",USERMAIL);
         emailConfig.putString("rule",".+@.+");
 
         String inputsBaseTag ="CustomInputFragment";
@@ -73,7 +87,6 @@ public class SignupActivity extends AppCompatActivity implements
 
         Bundle submitConfig = new Bundle();
         submitConfig.putString("text", "Suivant");
-        submitConfig.putString("url",inputListener);//todo change listener
 
         String submitBaseTag ="CustomSubmitFragment";
         List<Bundle> submitConfigs = Arrays.asList(submitConfig); //order matters : order on screen
@@ -93,19 +106,18 @@ public class SignupActivity extends AppCompatActivity implements
 
 
     @Override
-    public void setInputET(String reqParamName, EditText input) {
-        mapInputsET.put(reqParamName,input);
-    }
-
-    @Override
-    public void setTitleTV(String reqParamName, TextView tv) {
-        mapInputsTitleTV.put(reqParamName,tv);
-    }
+    public void setInputET(String reqParamName, EditText input) { mapInputsET.put(reqParamName,input); }
 
     @Override
     public void setMsgTV(String reqParamName, TextView tv) {
         mapInputsMSGTV.put(reqParamName,tv);
     }
+
+    @Override
+    public void setMapInputsTrafficLight(String reqParamName, boolean light) {
+        mapInputsTrafficLight.put(reqParamName,light);
+    }
+
 
     @Override
     public void onInputRequestResponse(String reqParamName, JSONObject response) {
@@ -117,7 +129,26 @@ public class SignupActivity extends AppCompatActivity implements
         mapInputsMSGTV.get(reqParamName).setText("Response: " + exception.toString());//debug todo comment
     }
 
-    public Map<String, EditText> getMapInputsET() {
-        return mapInputsET;
+    @Override
+    public void submit() {
+        for(Boolean ok : mapInputsTrafficLight.values())
+            if(!ok) {
+                Toast.makeText(meGod, "Au moins un champ est mal rempli", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        goNext();
     }
+
+
+    private void goNext(){
+        Intent intent=new Intent(meGod,SignupChoosePasswordActivity.class);
+        intent.setAction(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(SignupChoosePasswordActivity.USERMAIL,mapInputsET.get("email").getText());
+        intent.putExtra(SignupChoosePasswordActivity.USERNAME,mapInputsET.get("username").getText());
+        startActivity(intent);
+    }
+
+
+    //class end
 }

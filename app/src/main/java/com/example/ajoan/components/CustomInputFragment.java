@@ -81,41 +81,42 @@ public class CustomInputFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (config.getString("url") != null){
 
-                    String rule = config.getString("rule"); //rule says whether the charseq is sendable or not
-                    if(rule!=null){
-                        Pattern pattern = Pattern.compile(rule);
-                        Matcher matcher = pattern.matcher(s.toString());
-                        if(!matcher.matches()) {
-                            Log.i("CustomInputFragment","no sendable input : "+rule+"#"+s.toString());
-                            String manual = config.getString("manual");
-                            if(manual!=null)
-                                inputMsgTV.setText(manual);
-                            return; //exit from onTextChanged without sending the charseq
-                        }
+                myListener.setMapInputsTrafficLight(determineReqParamName(),false);
+
+                String rule = config.getString("rule"); //rule says whether the charseq is sendable or not
+                if(rule!=null){
+                    Pattern pattern = Pattern.compile(rule);
+                    Matcher matcher = pattern.matcher(s.toString());
+                    if(!matcher.matches()) {
+                        Log.i("CustomInputFragment","no sendable input : "+rule+"#"+s.toString());
+                        String manual = config.getString("manual");
+                        if(manual!=null)
+                            inputMsgTV.setText(manual);
+                        return; //exit from onTextChanged without sending the charseq
                     }
+                }
 
-                    //Reset/clear warning message if it passes the rule
-                    inputMsgTV.setText("");
+                myListener.setMapInputsTrafficLight(determineReqParamName(),true);
+                inputMsgTV.setText(""); //Reset/clear warning message if it passes the rule
 
-                    String reqParamName =  determineReqParamName();
+                if (config.getString("url") != null)
                     try {
                         Log.i("CustomInputFragment", "Sending request to " + config.getString("url") +
-                                " with param {" +  reqParamName + ":" + s.toString() + "}");
+                                " with param {" +  determineReqParamName() + ":" + s.toString() + "}");
                         queue.cancelAll(requestCounter); //cancel the previous request
                         queue.add((JsonObjectRequest)
                                 new JsonObjectRequest(
                                         Request.Method.GET, config.getString("url"),
                                         new JSONObject().put(
-                                                reqParamName
+                                                determineReqParamName()
                                                 , s.toString()
                                         ),
                                         new Response.Listener<JSONObject>() {
                                             @Override
                                             public void onResponse(JSONObject response) {
                                                 Log.d("CustomInputFragment","onErrorResponse : '"+response+"'");
-                                               myListener.onInputRequestResponse(determineReqParamName(),response);
+                                                myListener.onInputRequestResponse(determineReqParamName(),response);
                                             }
                                         },
                                         new Response.ErrorListener() {
@@ -130,7 +131,6 @@ public class CustomInputFragment extends Fragment {
                         //TODO REPLACE BY E.getMYStacktrace and my own logger
                         Log.i("CustomInputFragment", "/onTextChanged", e);
                     }
-                }
             }
 
             @Override
@@ -144,8 +144,8 @@ public class CustomInputFragment extends Fragment {
 
         //And finally share the created views with his listener
         myListener.setInputET(determineReqParamName(),inputET);
-        myListener.setTitleTV(determineReqParamName(),inputTitleTV);
         myListener.setMsgTV(determineReqParamName(),inputMsgTV);
+        myListener.setMapInputsTrafficLight(determineReqParamName(),false);
     }
 
 
@@ -163,10 +163,11 @@ public class CustomInputFragment extends Fragment {
      * To extends the fragment's listener requirement  */
     public interface Listener {
         void setInputET(String reqParamName, EditText input);
-        void setTitleTV(String reqParamName, TextView tv);
         void setMsgTV(String reqParamName, TextView tv);
 
-        void onInputRequestResponse(String reqParamName,  JSONObject response);
+        void setMapInputsTrafficLight(String reqParamName, boolean light);
+
+        void onInputRequestResponse(String reqParamName, JSONObject response);
         void onInputRequestError(String reqParamName,  Exception exception);
     }
 

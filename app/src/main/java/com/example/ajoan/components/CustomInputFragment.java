@@ -3,7 +3,7 @@ package com.example.ajoan.components;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android./**support.v4.*/app.Fragment;
+import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -26,6 +26,8 @@ import org.json.JSONObject;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -39,7 +41,7 @@ public class CustomInputFragment extends Fragment {
     private EditText inputET;
     private TextView inputMsgTV;
 
-    private RequestQueue queue;
+    private RequestQueue queue; //private bus driver
     private int requestCounter = 0;
 
 
@@ -79,28 +81,48 @@ public class CustomInputFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (config.getString("url") != null && config.getString("reqParamName") != null){
-                    queue = Volley.newRequestQueue((Context)myListener); //private bus driver
+                if (config.getString("url") != null){
+
+                    String rule = config.getString("rule"); //rule says whether the charseq is sendable or not
+                    if(rule!=null){
+                        Pattern pattern = Pattern.compile(rule);
+                        Matcher matcher = pattern.matcher(s.toString());
+                        if(!matcher.matches()) {
+                            Log.i("CustomInputFragment","no sendable input : "+rule+"#"+s.toString());
+                            String manual = config.getString("manual");
+                            if(manual!=null)
+                                inputMsgTV.setText(manual);
+                            return; //exit from onTextChanged without sending the charseq
+                        }
+                    }
+
+                    //Reset/clear warning message if it passes the rule
+                    inputMsgTV.setText("");
+
+                    String reqParamName =  determineReqParamName();
                     try {
                         Log.i("CustomInputFragment", "Sending request to " + config.getString("url") +
-                                " with param {" + config.getString("reqParamName") + ":" + inputET.getText() + "}");
+                                " with param {" +  reqParamName + ":" + s.toString() + "}");
                         queue.cancelAll(requestCounter); //cancel the previous request
                         queue.add((JsonObjectRequest)
                                 new JsonObjectRequest(
                                         Request.Method.GET, config.getString("url"),
                                         new JSONObject().put(
-                                                config.getString("reqParamName")
-                                                , inputET.getText()
+                                                reqParamName
+                                                , s.toString()
                                         ),
                                         new Response.Listener<JSONObject>() {
                                             @Override
                                             public void onResponse(JSONObject response) {
-                                                inputMsgTV.setText("Response: " + response.toString());
+                                                Log.d("CustomInputFragment","onErrorResponse : '"+response+"'");
+                                               myListener.onInputRequestResponse(determineReqParamName(),response);
                                             }
                                         },
                                         new Response.ErrorListener() {
                                             @Override
                                             public void onErrorResponse(VolleyError error) {
+                                                Log.d("CustomInputFragment","onErrorResponse : '"+error+"'",error);
+                                                myListener.onInputRequestError(determineReqParamName(),error);
                                             }
                                         }).setTag(requestCounter++)
                         );
@@ -108,7 +130,6 @@ public class CustomInputFragment extends Fragment {
                         //TODO REPLACE BY E.getMYStacktrace and my own logger
                         Log.i("CustomInputFragment", "/onTextChanged", e);
                     }
-
                 }
             }
 
@@ -120,6 +141,11 @@ public class CustomInputFragment extends Fragment {
         //msg tv
         inputMsgTV = (TextView) view.findViewById(R.id.input_msg);
         inputMsgTV.setText("");//reset message to no message (default)
+
+        //And finally share the created views with his listener
+        myListener.setInputET(determineReqParamName(),inputET);
+        myListener.setTitleTV(determineReqParamName(),inputTitleTV);
+        myListener.setMsgTV(determineReqParamName(),inputMsgTV);
     }
 
 
@@ -133,23 +159,40 @@ public class CustomInputFragment extends Fragment {
     }
 
 
-    public interface Listener { }
+    /**
+     * To extends the fragment's listener requirement  */
+    public interface Listener {
+        void setInputET(String reqParamName, EditText input);
+        void setTitleTV(String reqParamName, TextView tv);
+        void setMsgTV(String reqParamName, TextView tv);
+
+        void onInputRequestResponse(String reqParamName,  JSONObject response);
+        void onInputRequestError(String reqParamName,  Exception exception);
+    }
 
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof Listener)
+        if (context instanceof Listener) {
             myListener = (Listener) context;
-        else
-            throw new RuntimeException(
-                    context.toString()+" must implement Listener");
+            queue = Volley.newRequestQueue(context);
+        }else
+            throw new RuntimeException(context.toString()+" must implement Listener");
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         myListener = null;
+    }
+
+    //todo find better if possible than returning ""
+    private String determineReqParamName(){
+        return config.getString("reqParamName")!=null ?
+                config.getString("reqParamName") :
+                config.getString("title")!=null ?
+                        config.getString("title") : "";//""->not a request parameter
     }
 
 }

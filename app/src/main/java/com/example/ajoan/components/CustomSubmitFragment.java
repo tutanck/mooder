@@ -1,18 +1,15 @@
 package com.example.ajoan.components;
 
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -26,12 +23,9 @@ import com.example.ajoan.maps.R;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -43,7 +37,7 @@ public class CustomSubmitFragment extends Fragment {
 
     private Button submitBtn;
 
-    private RequestQueue queue;
+    private RequestQueue queue; //private bus driver
     private boolean onTheFly = false;
 
 
@@ -71,36 +65,36 @@ public class CustomSubmitFragment extends Fragment {
         submitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!onTheFly && config.getString("url") != null) {
+                if(config.getString("url") != null && !onTheFly) {
                         JSONObject requestParameters = new JSONObject();
                         try {
-                            for(Map.Entry<String,EditText> entry : myListener.getFormInputs().entrySet())
+                            for(Map.Entry<String,EditText> entry : myListener.getMapInputsET().entrySet())
                                 requestParameters.put(entry.getKey(),entry.getValue().getText());
                         } catch (JSONException e) {
                             //TODO REPLACE BY E.getMYStacktrace and my own logger
                             Log.i("CustomInputFragment", "/onTextChanged", e);
                         }
 
-                        queue = Volley.newRequestQueue((Context) myListener); //private bus driver
-
                         Log.i("CustomInputFragment", "Sending request to " + config.getString("url") +
                                 " with params "+requestParameters);
                         queue.add((JsonObjectRequest)
-                                new JsonObjectRequest(
-                                        Request.Method.POST, config.getString("url"),
+                                new JsonObjectRequest( //todo parametrize the http send methode later
+                                        Request.Method.POST,
+                                        config.getString("url"),
                                         requestParameters,
                                         new Response.Listener<JSONObject>() {
                                             @Override
                                             public void onResponse(JSONObject response) {
                                                 onTheFly = false;
-                                                //TODO
+                                                Toast.makeText(getContext(),response.toString(), Toast.LENGTH_SHORT).show();
                                             }
                                         },
                                         new Response.ErrorListener() {
                                             @Override
                                             public void onErrorResponse(VolleyError error) {
                                                 onTheFly = false;
-                                                //TODO
+                                                Log.d("CustomSubmitFragment","onErrorResponse",error);
+                                                Toast.makeText(getContext(),"Impossible de joindre le serveur", Toast.LENGTH_SHORT).show();
                                             }
                                         })
                         );
@@ -122,18 +116,18 @@ public class CustomSubmitFragment extends Fragment {
 
 
     public interface Listener {
-        Map<String,EditText> getFormInputs();
+        Map<String,EditText> getMapInputsET();
     }
 
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof Listener)
+        if (context instanceof Listener) {
             myListener = (Listener) context;
-        else
-            throw new RuntimeException(
-                    context.toString()+" must implement Listener");
+            queue = Volley.newRequestQueue(context);
+        }else
+            throw new RuntimeException(context.toString()+" must implement Listener");
     }
 
     @Override

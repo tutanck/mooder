@@ -15,10 +15,14 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.ajoan.MyApp;
 import com.example.ajoan.components.CustomInputFragment;
 import com.example.ajoan.components.CustomSubmitFragment;
 import com.example.ajoan.maps.R;
+import com.example.ajoan.momento.api.apis.DataIledefranceFr;
+import com.example.ajoan.utils.AppRouting;
 import com.example.ajoan.utils.FragmentInjecter;
 
 import org.json.JSONException;
@@ -26,6 +30,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,16 +52,16 @@ public class ChoosePasswordActivity
     public final static String USERPASS ="pass";
     public final static String USER_PASS_CHK ="confirm";
 
+    private String submitListener = AppRouting.serverAdr+AppRouting.signup;
+    private RequestQueue queue;
+    private boolean onTheFly = false;
+
     private final static String PASS_RULE = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,})";
 
     private Map<String,EditText> mapInputsET = new HashMap<>();
     private Map<String,TextView> mapInputsMSGTV = new HashMap<>();
 
     private Map<String,Boolean> mapInputsTrafficLight = new HashMap<>();
-
-    private String submitListener = "http:localhost:8080/input/checkout";
-    private RequestQueue queue;
-    private boolean onTheFly = false;
 
     private List<Fragment> myFragments = new ArrayList<>();
 
@@ -143,57 +148,49 @@ public class ChoosePasswordActivity
 
     @Override
     public void submit() {
-        for(Boolean ok : mapInputsTrafficLight.values())
-            if(!ok) {
+        for (Boolean ok : mapInputsTrafficLight.values())
+            if (!ok) {
                 Toast.makeText(meGod, "Au moins un champ est mal rempli", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-        if(! (mapInputsET.get(USERPASS).getText().toString())               .equals
+        if (!(mapInputsET.get(USERPASS).getText().toString()).equals
                 ((mapInputsET.get(USER_PASS_CHK).getText()).toString())
                 ) {
-            Toast.makeText(meGod,"La vérification ne correspond pas au mot de passe", Toast.LENGTH_SHORT).show();
+            Toast.makeText(meGod, "La vérification ne correspond pas au mot de passe", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        JSONObject requestParameters = new JSONObject();
-        if(!onTheFly)
-            try {
-                requestParameters.put(USERMAIL,getIntent().getStringExtra(USERMAIL));
-                requestParameters.put(USERNAME,getIntent().getStringExtra(USERNAME));
-                requestParameters.put(USERPASS,mapInputsET.get(USERPASS).getText());
+        if (!onTheFly){
+            String reqStr = submitListener + "?"
+                    + USERMAIL + "=" + getIntent().getStringExtra(USERMAIL)
+                    +"&"+ USERNAME + "=" + getIntent().getStringExtra(USERNAME)
+                    +"&"+ USERPASS + "=" + mapInputsET.get(USERPASS).getText();
 
-                Log.i("CustomInputFragment", "Sending request to " + submitListener + " with params "+requestParameters);
+            Log.i("ChoosePasswordActivity", "/submit : Sending this request:\n  -->" + reqStr);
 
-                queue.add((JsonObjectRequest)
-                        new JsonObjectRequest(
-                                Request.Method.POST,
-                                submitListener,
-                                requestParameters,
-                                new Response.Listener<JSONObject>() {
-                                    @Override
-                                    public void onResponse(JSONObject response) {
-                                        onTheFly = false;
-                                        goNext();
-                                    }
-                                },
-                                new Response.ErrorListener() {
-                                    @Override
-                                    public void onErrorResponse(VolleyError error) {
-                                        onTheFly = false;
-                                        Log.d("CustomSubmitFragment","onErrorResponse",error);
-                                        Toast.makeText(meGod,"Impossible de joindre le serveur", Toast.LENGTH_SHORT).show();
-                                        goNext();//todo rem
-                                    }
-                                })
-                );
-
-                onTheFly = true;
-
-            } catch (JSONException e) {
-                //TODO REPLACE BY E.getMYStacktrace and my own logger
-                Log.i("CustomInputFragment", "/onTextChanged", e);
-            }
+            queue.add(new StringRequest(
+                    Request.Method.POST,
+                    reqStr,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            onTheFly = false;
+                            Log.i("VolleyCallResponse","response : "+response);
+                            goNext();
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            onTheFly = false;
+                            Toast.makeText(meGod, "Impossible de joindre le serveur! " +
+                                            "Merci de vérifier votre connexion internet ou essayez plus tard",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }));
+            onTheFly = true;
+        }
     }
 
 

@@ -9,9 +9,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.ajoan.MyApp;
 import com.example.ajoan.components.CustomInputFragment;
 import com.example.ajoan.components.CustomSubmitFragment;
 import com.example.ajoan.maps.R;
+import com.example.ajoan.utils.AppRouting;
 import com.example.ajoan.utils.FragmentInjecter;
 
 import org.json.JSONObject;
@@ -35,7 +37,7 @@ public class SignupActivity
 
     private String pageTitleText ="Comment te reconnaître ?";
 
-    private String inputListener = "http:localhost:8080/input/checkout";
+    private String inputListener = AppRouting.serverAdr+AppRouting.inputChk;
 
     public final static String USERMAIL ="email";
     public final static String USERNAME ="username";
@@ -154,8 +156,8 @@ public class SignupActivity
         Intent intent=new Intent(meGod,ChoosePasswordActivity.class);
         intent.setAction(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        intent.putExtra(ChoosePasswordActivity.USERMAIL,mapInputsET.get("email").getText());
-        intent.putExtra(ChoosePasswordActivity.USERNAME,mapInputsET.get("username").getText());
+        intent.putExtra(ChoosePasswordActivity.USERMAIL,mapInputsET.get("email").getText().toString());
+        intent.putExtra(ChoosePasswordActivity.USERNAME,mapInputsET.get("username").getText().toString());
         startActivity(intent);
     }
 

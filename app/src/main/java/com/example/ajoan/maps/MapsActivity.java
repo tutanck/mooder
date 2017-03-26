@@ -170,7 +170,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 RequestQueue queue = Volley.newRequestQueue(this); // Instantiate the RequestQueue
                 // Request a string response from the provided URL
-                StringRequest stringRequest = new StringRequest(Request.Method.GET,
+                StringRequest stringRequest = new StringRequest(
+                        Request.Method.GET,
                         DataIledefranceFr.baseUrl
                                 + ((MyApp) getApplication()).mLastLocation.getLatitude() + "%2C+"
                                 + ((MyApp) getApplication()).mLastLocation.getLongitude() + "%2C"

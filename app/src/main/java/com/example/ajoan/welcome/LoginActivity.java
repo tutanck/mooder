@@ -20,6 +20,7 @@ import com.example.ajoan.components.CustomInputFragment;
 import com.example.ajoan.components.CustomSubmitFragment;
 import com.example.ajoan.maps.MapsActivity;
 import com.example.ajoan.maps.R;
+import com.example.ajoan.utils.AppRouting;
 import com.example.ajoan.utils.FragmentInjecter;
 
 import org.json.JSONException;
@@ -55,7 +56,7 @@ public class LoginActivity
     private Map<String,Boolean> mapInputsTrafficLight = new HashMap<>();
 
     private String inputListener = "http:localhost:8080/input/checkout";
-    private String submitListener = "http:localhost:8080/input/checkout";
+    private String submitListener = AppRouting.serverAdr+AppRouting.signin;
     private RequestQueue queue;
     private boolean onTheFly = false;
 

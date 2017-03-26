@@ -12,20 +12,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.Utils;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -45,7 +41,8 @@ public class CustomInputFragment extends Fragment {
     private TextView inputMsgTV;
 
     private RequestQueue queue; //private bus driver
-    private int requestCounter = 0;
+    private boolean onTheFly = false;
+    private String requestsTAG = "FLYING";
 
 
     public CustomInputFragment() {
@@ -84,58 +81,56 @@ public class CustomInputFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                myListener.setMapInputsTrafficLight(determineReqParamName(),false);
-
                 String rule = config.getString("rule"); //rule says whether the charseq is sendable or not
-                if(rule!=null){
+                if (rule != null) {
+                    myListener.setMapInputsTrafficLight(determineReqParamName(), false);
                     Pattern pattern = Pattern.compile(rule);
                     Matcher matcher = pattern.matcher(s.toString());
-                    if(!matcher.matches()) {
-                        Log.i("CustomInputFragment","no sendable input : "+rule+"#"+s.toString());
+                    if (!matcher.matches()) {
+                        Log.i("CustomInputFragment", "no sendable input : " + rule + " <-- != --> " + s.toString());
                         String manual = config.getString("manual");
-                        if(manual!=null) {
+                        if (manual != null) {
                             inputMsgTV.setHeight(getMSGTVHeight(getResources()));
                             inputMsgTV.setText(manual);
                         }
                         return; //exit from onTextChanged without sending the charseq
                     }
-                    myListener.setMapInputsTrafficLight(determineReqParamName(),true);
+                    myListener.setMapInputsTrafficLight(determineReqParamName(), true);
                     inputMsgTV.setText(""); //Reset/clear warning message if it passes the rule
                 }
 
-                if (config.getString("url") != null)
-                    try {
-                        myListener.setMapInputsTrafficLight(determineReqParamName(),false);
-                        Log.i("CustomInputFragment", "Sending request to " + config.getString("url") +
-                                " with param {" +  determineReqParamName() + ":" + s.toString() + "}");
-                        queue.cancelAll(requestCounter); //cancel the previous request
-                        queue.add((JsonObjectRequest)
-                                new JsonObjectRequest(
-                                        Request.Method.GET, config.getString("url"),
-                                        new JSONObject().put(
-                                                determineReqParamName()
-                                                , s.toString()
-                                        ),
-                                        new Response.Listener<JSONObject>() {
-                                            @Override
-                                            public void onResponse(JSONObject response) {
-                                                Log.d("CustomInputFragment","onErrorResponse : '"+response+"'");
-                                                myListener.onInputRequestResponse(determineReqParamName(),response);
-                                            }
-                                        },
-                                        new Response.ErrorListener() {
-                                            @Override
-                                            public void onErrorResponse(VolleyError error) {
-                                                Log.d("CustomInputFragment","onErrorResponse : '"+error+"'",error);
-                                                myListener.onInputRequestError(determineReqParamName(),error);
-                                            }
-                                        }).setTag(requestCounter++)
-                        );
-                    } catch (JSONException e) {
-                        //TODO REPLACE BY E.getMYStacktrace and my own logger
-                        Log.i("CustomInputFragment", "/onTextChanged", e);
-                    }
+                String url =config.getString("url");
+                if (url != null) { //todo why doubling request time to time
+                    if(onTheFly)
+                        queue.cancelAll(requestsTAG); //cancel all the previous requests
+
+                    myListener.setMapInputsTrafficLight(determineReqParamName(), false);
+
+                    String reqStr=url+"?"+determineReqParamName()+"="+s;
+
+                    Log.i("CustomInputFragment", "/submit : Sending this request:\n  -->" + reqStr);
+
+                    queue.add((StringRequest) new StringRequest(
+                            Request.Method.GET,
+                            reqStr,
+                            new Response.Listener<String>() {
+                                @Override
+                                public void onResponse(String response) {
+                                    onTheFly=false;
+                                    Log.d("CustomInputFragment", "onErrorResponse : '" + response + "'");
+                                    myListener.onInputRequestResponse(determineReqParamName(), response);
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    onTheFly=false;
+                                    Log.d("CustomInputFragment", "onErrorResponse : '" + error + "'", error);
+                                    myListener.onInputRequestError(determineReqParamName(), error);
+                                }
+                            }).setTag(requestsTAG)
+                    );
+                }
             }
 
             @Override
@@ -150,7 +145,7 @@ public class CustomInputFragment extends Fragment {
         //And finally share the created views with his listener
         myListener.setInputET(determineReqParamName(),inputET);
         myListener.setMsgTV(determineReqParamName(),inputMsgTV);
-        myListener.setMapInputsTrafficLight(determineReqParamName(),false);
+        myListener.setMapInputsTrafficLight(determineReqParamName(),false); //for empty inputs
     }
 
 
@@ -172,7 +167,7 @@ public class CustomInputFragment extends Fragment {
 
         void setMapInputsTrafficLight(String reqParamName, boolean light);
 
-        void onInputRequestResponse(String reqParamName, JSONObject response);
+        void onInputRequestResponse(String reqParamName, String response);
         void onInputRequestError(String reqParamName,  Exception exception);
     }
 

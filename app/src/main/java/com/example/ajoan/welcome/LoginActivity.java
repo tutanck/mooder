@@ -3,6 +3,7 @@ package com.example.ajoan.welcome;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -14,7 +15,6 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.ajoan.components.CustomInputFragment;
@@ -23,9 +23,6 @@ import com.example.ajoan.maps.MapsActivity;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.AppRouting;
 import com.example.ajoan.utils.FragmentInjecter;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,17 +43,20 @@ public class LoginActivity
 
     private String pageTitleText ="Connexion";
 
+    public final static String DID ="did";
     public final static String USERNAME ="username";
     public final static String USERPASS ="pass";
 
+    private final static String UNAME_RULE = "((?=.*[a-zA-Z0-9]).{3,})";
     private final static String PASS_RULE = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,})";
+
+    private String android_id;
 
     private Map<String,EditText> mapInputsET = new HashMap<>();
     private Map<String,TextView> mapInputsMSGTV = new HashMap<>();
 
     private Map<String,Boolean> mapInputsTrafficLight = new HashMap<>();
 
-    private String inputListener = "http:localhost:8080/input/checkout";
     private String submitListener = AppRouting.serverAdr+AppRouting.signin;
     private RequestQueue queue;
     private boolean onTheFly = false;
@@ -77,8 +77,8 @@ public class LoginActivity
         usernameConfig.putString("title", "Identifiant");
         usernameConfig.putString("hint", "Nom d'utilisateur ou email");
         usernameConfig.putInt("type",TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PERSON_NAME);
-        usernameConfig.putString("url",inputListener);
         usernameConfig.putString("reqParamName",USERNAME);
+        usernameConfig.putString("rule",UNAME_RULE); //fictive rule to get unblocked by the rule checker of cif(customInputFragment)
 
         passConfig.putString("title", "Mot de passe");
         passConfig.putString("hint", "Entre ton mot de passe");
@@ -121,6 +121,8 @@ public class LoginActivity
             );
 
         queue= Volley.newRequestQueue(meGod);
+
+        android_id = Settings.Secure.getString(meGod.getContentResolver(),Settings.Secure.ANDROID_ID);
     }
 
 
@@ -138,22 +140,11 @@ public class LoginActivity
         mapInputsTrafficLight.put(reqParamName,light);
     }
 
+    @Override
+    public void onInputRequestResponse(String reqParamName, String response) { }
 
     @Override
-    public void onInputRequestResponse(String reqParamName, JSONObject response) {
-        setMapInputsTrafficLight(reqParamName,true);
-        mapInputsMSGTV.get(reqParamName).setHeight(0);
-        mapInputsMSGTV.get(reqParamName).setHeight(CustomInputFragment.getMSGTVHeight(getResources()));
-        mapInputsMSGTV.get(reqParamName).setText("Response: " + response.toString());
-    }
-
-    @Override
-    public void onInputRequestError(String reqParamName, Exception exception) {
-        setMapInputsTrafficLight(reqParamName,true);
-        mapInputsMSGTV.get(reqParamName).setHeight(0);
-        mapInputsMSGTV.get(reqParamName).setHeight(CustomInputFragment.getMSGTVHeight(getResources()));
-        mapInputsMSGTV.get(reqParamName).setText("Response: " + exception.toString());//debug todo comment
-    }
+    public void onInputRequestError(String reqParamName, Exception exception) { }
 
     @Override
     public void submit() {
@@ -163,11 +154,11 @@ public class LoginActivity
                 return;
             }
 
-        JSONObject requestParameters = new JSONObject();
         if(!onTheFly){
                 String reqStr = submitListener + "?"
                         + USERNAME + "=" + mapInputsET.get(USERNAME).getText()
-                        +"&"+ USERPASS + "=" + mapInputsET.get(USERPASS).getText();
+                        +"&"+ USERPASS + "=" + mapInputsET.get(USERPASS).getText()
+                        +"&"+ DID + "=" + android_id;
 
                 Log.i("ChoosePasswordActivity", "/submit : Sending this request:\n  -->" + reqStr);
 

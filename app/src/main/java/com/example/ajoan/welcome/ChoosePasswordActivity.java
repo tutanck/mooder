@@ -14,23 +14,18 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.ajoan.MyApp;
 import com.example.ajoan.components.CustomInputFragment;
 import com.example.ajoan.components.CustomSubmitFragment;
 import com.example.ajoan.maps.R;
-import com.example.ajoan.momento.api.apis.DataIledefranceFr;
 import com.example.ajoan.utils.AppRouting;
 import com.example.ajoan.utils.FragmentInjecter;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,7 +130,7 @@ public class ChoosePasswordActivity
     }
 
     @Override
-    public void onInputRequestResponse(String reqParamName, JSONObject response) { }
+    public void onInputRequestResponse(String reqParamName, String response) { }
 
     @Override
     public void onInputRequestError(String reqParamName, Exception exception) { }

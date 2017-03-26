@@ -5,11 +5,11 @@ import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.ajoan.MyApp;
 import com.example.ajoan.components.CustomInputFragment;
 import com.example.ajoan.components.CustomSubmitFragment;
 import com.example.ajoan.maps.R;
@@ -37,8 +37,6 @@ public class SignupActivity
 
     private String pageTitleText ="Comment te reconnaître ?";
 
-    private String inputListener = AppRouting.serverAdr+AppRouting.inputChk;
-
     public final static String USERMAIL ="email";
     public final static String USERNAME ="username";
 
@@ -63,7 +61,7 @@ public class SignupActivity
         usernameConfig.putString("title", "Nom d'utilisateur");
         usernameConfig.putString("hint", "Choisis ton nom sur Mood");
         usernameConfig.putInt("type",TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PERSON_NAME);
-        usernameConfig.putString("url",inputListener);
+        usernameConfig.putString("url",AppRouting.serverAdr+AppRouting.usernameChk);
         usernameConfig.putString("reqParamName",USERNAME);
         usernameConfig.putString("rule","((?=.*[a-z])^[a-zA-Z](\\w{2,}))");
         usernameConfig.putString("manual","Un nom d'utilisateur contient au moins 3 caractères et commence par une lettre");
@@ -71,7 +69,7 @@ public class SignupActivity
         emailConfig.putString("title", "Email");
         emailConfig.putString("hint", "Entre ton adresse email");
         emailConfig.putInt("type",TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-        emailConfig.putString("url",inputListener);
+        emailConfig.putString("url",AppRouting.serverAdr+AppRouting.emailChk);
         emailConfig.putString("reqParamName",USERMAIL);
         emailConfig.putString("rule",".+@.+");
 
@@ -125,7 +123,7 @@ public class SignupActivity
 
 
     @Override
-    public void onInputRequestResponse(String reqParamName, JSONObject response) {
+    public void onInputRequestResponse(String reqParamName, String response) {
         setMapInputsTrafficLight(reqParamName,true);
         mapInputsMSGTV.get(reqParamName).setText(""); //Reset/clear warning message if it passes the rule
         mapInputsMSGTV.get(reqParamName).setHeight(0);
@@ -135,10 +133,8 @@ public class SignupActivity
 
     @Override
     public void onInputRequestError(String reqParamName, Exception exception) {
-        setMapInputsTrafficLight(reqParamName,true);
-        mapInputsMSGTV.get(reqParamName).setHeight(0);
-        mapInputsMSGTV.get(reqParamName).setHeight(CustomInputFragment.getMSGTVHeight(getResources()));
-        mapInputsMSGTV.get(reqParamName).setText("Response: " + exception.toString());//debug todo comment
+        setMapInputsTrafficLight(reqParamName,true); //non-blocking
+        Log.i("VolleyCallError","SignupActivity :: error : "+exception);
     }
 
     @Override

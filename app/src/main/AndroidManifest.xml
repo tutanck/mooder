@@ -22,6 +22,10 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
+    <!-- To auto-complete the email text field in the login form with the user's emails -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_PROFILE" />
+
     <application
         android:name="com.example.ajoan.MyApp"
         android:allowBackup="true"
@@ -54,10 +58,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name="com.example.ajoan.events.activities.EventActivity"
             android:label="@string/title_activity_event"
             android:theme="@style/AppTheme.NoActionBar" />
+
         <activity
             android:name="com.example.ajoan.events.activities.EventsListActivity"
             android:label="Mood(list)"
@@ -68,9 +74,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name="com.example.ajoan.welcome.SignupActivity"
-            android:label="SignUP"
+            android:label="Inscription"
             android:windowSoftInputMode="stateVisible|adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -78,9 +85,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.ajoan.welcome.SignupChoosePasswordActivity"
-            android:windowSoftInputMode="stateVisible|adjustResize">
-        </activity>
+
+        <activity
+            android:name="com.example.ajoan.welcome.ChoosePasswordActivity"
+            android:label="Sécurité"
+            android:windowSoftInputMode="stateVisible|adjustResize"></activity>
+
+        <activity
+            android:name="com.example.ajoan.welcome.LoginActivity"
+            android:label="Connexion"
+            android:windowSoftInputMode="stateVisible|adjustResize"></activity>
     </application>
 
 </manifest>

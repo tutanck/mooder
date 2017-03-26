@@ -33,12 +33,14 @@ import java.util.Map;
 import static android.text.InputType.TYPE_CLASS_TEXT;
 import static android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
 
-public class SignupChoosePasswordActivity
+public class ChoosePasswordActivity
         extends AppCompatActivity implements
         CustomInputFragment.Listener,
         CustomSubmitFragment.Listener{
 
     private Context meGod=this;
+
+    private String pageTitleText ="Choisis ton mot de passe";
 
     public final static String USERMAIL ="email";
     public final static String USERNAME ="username";
@@ -64,22 +66,23 @@ public class SignupChoosePasswordActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_signup_choose_password);
+        setContentView(R.layout.activity_welcome);
+
+        TextView pageTitle = (TextView) findViewById(R.id.pageTitle);
+        pageTitle.setText(pageTitleText);
 
         passConfig.putString("title", "Mot de passe");
         passConfig.putString("hint", "Choisis ton mot de passe");
         passConfig.putInt("type",TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PASSWORD);
         passConfig.putString("reqParamName",USERPASS);//mandatory if we want the submitBtn to recognize it for submission
         passConfig.putString("rule",PASS_RULE);
-        passConfig.putString("manual","Un mot de passe contient au moins 8 caractères dont au moins un chiffre, une lettre Majuscule et une lettre minuscule");
-        mapInputsTrafficLight.put(USERPASS,false);
+        passConfig.putString("manual","Il faut au moins 8 caractères dont au moins un chiffre, une Majuscule et une minuscule");
 
         confirmConfig.putString("title", "Vérification");
         confirmConfig.putString("hint", "Vérification du mot de passe");
         confirmConfig.putInt("type",TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PASSWORD);
         confirmConfig.putString("reqParamName",USER_PASS_CHK); //mandatory if we want the submitBtn to recognize it for submission
         confirmConfig.putString("rule",PASS_RULE);
-        mapInputsTrafficLight.put(USER_PASS_CHK,false);
 
         String inputsBaseTag ="CustomInputFragment";
         List<Bundle> inputConfigs = Arrays.asList(passConfig,confirmConfig); //order matters : order on screen
@@ -127,14 +130,10 @@ public class SignupChoosePasswordActivity
     }
 
     @Override
-    public void onInputRequestResponse(String reqParamName, JSONObject response) {
-        mapInputsMSGTV.get(reqParamName).setText("Response: " + response.toString());
-    }
+    public void onInputRequestResponse(String reqParamName, JSONObject response) { }
 
     @Override
-    public void onInputRequestError(String reqParamName, Exception exception) {
-        mapInputsMSGTV.get(reqParamName).setText("Response: " + exception.toString());//debug todo comment
-    }
+    public void onInputRequestError(String reqParamName, Exception exception) { }
 
     @Override
     public void setMapInputsTrafficLight(String reqParamName, boolean light) {
@@ -184,6 +183,7 @@ public class SignupChoosePasswordActivity
                                         onTheFly = false;
                                         Log.d("CustomSubmitFragment","onErrorResponse",error);
                                         Toast.makeText(meGod,"Impossible de joindre le serveur", Toast.LENGTH_SHORT).show();
+                                        goNext();//todo rem
                                     }
                                 })
                 );
@@ -198,12 +198,12 @@ public class SignupChoosePasswordActivity
 
 
     private void goNext(){
-        Intent intent=new Intent(meGod,SignupChoosePasswordActivity.class);
+        Intent intent=new Intent(meGod,LoginActivity.class);
         intent.setAction(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        intent.putExtra(USERMAIL,getIntent().getStringExtra(USERMAIL));
-        intent.putExtra(USERNAME,getIntent().getStringExtra(USERNAME));
+        intent.putExtra(LoginActivity.USERNAME,getIntent().getStringExtra(USERNAME));
         startActivity(intent);
+        finish(); //finish this activity
     }
 
 

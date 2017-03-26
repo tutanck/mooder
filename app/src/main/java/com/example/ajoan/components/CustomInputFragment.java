@@ -101,12 +101,12 @@ public class CustomInputFragment extends Fragment {
                         return; //exit from onTextChanged without sending the charseq
                     }
                     myListener.setMapInputsTrafficLight(determineReqParamName(),true);
-                    inputMsgTV.setHeight(0);
                     inputMsgTV.setText(""); //Reset/clear warning message if it passes the rule
                 }
 
                 if (config.getString("url") != null)
                     try {
+                        myListener.setMapInputsTrafficLight(determineReqParamName(),false);
                         Log.i("CustomInputFragment", "Sending request to " + config.getString("url") +
                                 " with param {" +  determineReqParamName() + ":" + s.toString() + "}");
                         queue.cancelAll(requestCounter); //cancel the previous request

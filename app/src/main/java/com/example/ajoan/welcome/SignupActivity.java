@@ -121,11 +121,13 @@ public class SignupActivity
 
     @Override
     public void onInputRequestResponse(String reqParamName, JSONObject response) {
+        mapInputsMSGTV.get(reqParamName).setHeight(CustomInputFragment.getMSGTVHeight(getResources()));
         mapInputsMSGTV.get(reqParamName).setText("Response: " + response.toString());
     }
 
     @Override
     public void onInputRequestError(String reqParamName, Exception exception) {
+        mapInputsMSGTV.get(reqParamName).setHeight(CustomInputFragment.getMSGTVHeight(getResources()));
         mapInputsMSGTV.get(reqParamName).setText("Response: " + exception.toString());//debug todo comment
     }
 

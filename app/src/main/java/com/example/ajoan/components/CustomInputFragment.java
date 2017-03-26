@@ -1,6 +1,7 @@
 package com.example.ajoan.components;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -20,6 +22,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.ajoan.maps.R;
+import com.example.ajoan.utils.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -72,7 +75,7 @@ public class CustomInputFragment extends Fragment {
         if (config.getString("hint") != null)
             inputET.setHint(config.getString("hint"));
         if (config.getInt("type") !=0)
-            inputET.setRawInputType(config.getInt("type"));
+            inputET.setInputType(config.getInt("type"));
 
         inputET.addTextChangedListener(new TextWatcher() {
             @Override
@@ -91,14 +94,16 @@ public class CustomInputFragment extends Fragment {
                     if(!matcher.matches()) {
                         Log.i("CustomInputFragment","no sendable input : "+rule+"#"+s.toString());
                         String manual = config.getString("manual");
-                        if(manual!=null)
+                        if(manual!=null) {
+                            inputMsgTV.setHeight(getMSGTVHeight(getResources()));
                             inputMsgTV.setText(manual);
+                        }
                         return; //exit from onTextChanged without sending the charseq
                     }
+                    myListener.setMapInputsTrafficLight(determineReqParamName(),true);
+                    inputMsgTV.setHeight(0);
+                    inputMsgTV.setText(""); //Reset/clear warning message if it passes the rule
                 }
-
-                myListener.setMapInputsTrafficLight(determineReqParamName(),true);
-                inputMsgTV.setText(""); //Reset/clear warning message if it passes the rule
 
                 if (config.getString("url") != null)
                     try {
@@ -186,6 +191,10 @@ public class CustomInputFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         myListener = null;
+    }
+
+    public static int getMSGTVHeight(Resources resources){
+        return (int)Utils.pixelsInDP(36,resources);
     }
 
     //todo find better if possible than returning ""

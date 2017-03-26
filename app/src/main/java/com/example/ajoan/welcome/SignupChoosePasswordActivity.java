@@ -153,7 +153,7 @@ public class SignupChoosePasswordActivity
         if(! (mapInputsET.get(USERPASS).getText().toString())               .equals
                 ((mapInputsET.get(USER_PASS_CHK).getText()).toString())
                 ) {
-            mapInputsMSGTV.get(USER_PASS_CHK).setText("La vérification ne correspond pas au mot de passe");
+            Toast.makeText(meGod,"La vérification ne correspond pas au mot de passe", Toast.LENGTH_SHORT).show();
             return;
         }
 

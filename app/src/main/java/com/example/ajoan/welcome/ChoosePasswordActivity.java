@@ -200,7 +200,7 @@ public class ChoosePasswordActivity
         intent.setType("text/plain");
         intent.putExtra(LoginActivity.USERNAME,getIntent().getStringExtra(USERNAME));
         startActivity(intent);
-        finish(); //finish this activity
+        //finish(); //finish this activity
     }
 
 

@@ -15,6 +15,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.ajoan.components.CustomInputFragment;
 import com.example.ajoan.components.CustomSubmitFragment;
@@ -163,41 +164,34 @@ public class LoginActivity
             }
 
         JSONObject requestParameters = new JSONObject();
-        if(!onTheFly)
-            try {
-                requestParameters.put(USERNAME,mapInputsET.get(USERNAME).getText());
-                requestParameters.put(USERPASS,mapInputsET.get(USERPASS).getText());
+        if(!onTheFly){
+                String reqStr = submitListener + "?"
+                        + USERNAME + "=" + mapInputsET.get(USERNAME).getText()
+                        +"&"+ USERPASS + "=" + mapInputsET.get(USERPASS).getText();
 
-                Log.i("CustomInputFragment", "Sending request to " + submitListener + " with params "+requestParameters);
+                Log.i("ChoosePasswordActivity", "/submit : Sending this request:\n  -->" + reqStr);
 
-                queue.add((JsonObjectRequest)
-                        new JsonObjectRequest(
-                                Request.Method.POST,
-                                submitListener,
-                                requestParameters,
-                                new Response.Listener<JSONObject>() {
-                                    @Override
-                                    public void onResponse(JSONObject response) {
-                                        onTheFly = false;
-                                        goNext();
-                                    }
-                                },
-                                new Response.ErrorListener() {
-                                    @Override
-                                    public void onErrorResponse(VolleyError error) {
-                                        onTheFly = false;
-                                        Log.d("CustomSubmitFragment","onErrorResponse",error);
-                                        Toast.makeText(meGod,"Impossible de joindre le serveur", Toast.LENGTH_SHORT).show();
-                                        goNext();//todo rem
-                                    }
-                                })
-                );
-
+                queue.add(new StringRequest(
+                        Request.Method.POST,
+                        reqStr,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                onTheFly = false;
+                                Log.i("VolleyCallResponse","response : "+response);
+                                goNext();
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                onTheFly = false;
+                                Toast.makeText(meGod, "Impossible de joindre le serveur! " +
+                                                "Merci de vérifier votre connexion internet ou essayez plus tard",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }));
                 onTheFly = true;
-
-            } catch (JSONException e) {
-                //TODO REPLACE BY E.getMYStacktrace and my own logger
-                Log.i("CustomInputFragment", "/onTextChanged", e);
             }
     }
 
@@ -209,7 +203,7 @@ public class LoginActivity
         intent.setType("text/plain");
         //todo instal id and username in file
         startActivity(intent);
-        finish(); //finish this activity
+        //finish(); //finish this activity
     }
 
 

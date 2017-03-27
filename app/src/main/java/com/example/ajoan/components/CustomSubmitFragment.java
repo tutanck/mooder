@@ -45,9 +45,7 @@ public class CustomSubmitFragment extends Fragment {
 
         config = getArguments();
 
-        submitBtn = (Button) view.findViewById(R.id.submit);
-        if (config.getString("text") != null)
-            submitBtn.setText(config.getString("text"));
+
 
         submitBtn.setOnClickListener(new View.OnClickListener() {
             @Override

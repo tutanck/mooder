@@ -1,162 +1,157 @@
 package com.example.ajoan.welcome;
 
 import android.content.Context;
-import android.content.Intent;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.ajoan.components.CustomInputFragment;
-import com.example.ajoan.components.CustomSubmitFragment;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.AppRouting;
-import com.example.ajoan.utils.FragmentInjecter;
+import com.example.ajoan.utils.PostMan;
+import com.example.ajoan.utils.Utils;
+import com.example.ajoan.utils.WelcomeCodeTank;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static android.text.InputType.TYPE_CLASS_TEXT;
 import static android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
 import static android.text.InputType.TYPE_TEXT_VARIATION_PERSON_NAME;
 
-public class SignupActivity
-        extends AppCompatActivity implements
-        CustomInputFragment.Listener,
-        CustomSubmitFragment.Listener {
+public class SignupActivity extends AppCompatActivity implements PostMan.PostManClient{
 
-    private Context meGod=this;
+    private Context meGod = this;
 
-    private String pageTitleText ="Comment te reconnaître ?";
+    private final static String USERMAIL = "email";
+    private final static String USERNAME = "username";
 
-    public final static String USERMAIL ="email";
-    public final static String USERNAME ="username";
+    private Map<String, JSONObject> inputsMap = new HashMap<>();
+    private Button submit;
 
-    private Map<String,EditText> mapInputsET = new HashMap<>();
-    private Map<String,TextView> mapInputsMSGTV = new HashMap<>();
+    private int unlocked = 0;
 
-    private Map<String,Boolean> mapInputsTrafficLight = new HashMap<>();
-
-    private Bundle usernameConfig = new Bundle();
-    private Bundle emailConfig = new Bundle();
-
-    private List<Fragment> myFragments = new ArrayList<>();
+    private RequestQueue queue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
 
-        TextView pageTitle = (TextView) findViewById(R.id.pageTitle);
-        pageTitle.setText(pageTitleText);
+        WelcomeCodeTank.initTextView(
+                (TextView) findViewById(R.id.pageTitle),
+                "Comment te reconnaître ?"
+        );
 
-        usernameConfig.putString("title", "Nom d'utilisateur");
-        usernameConfig.putString("hint", "Choisis ton nom sur Mood");
-        usernameConfig.putInt("type",TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PERSON_NAME);
-        usernameConfig.putString("url",AppRouting.serverAdr+AppRouting.usernameChk);
-        usernameConfig.putString("reqParamName",USERNAME);
-        usernameConfig.putString("rule","((?=.*[a-z])^[a-zA-Z](\\w{2,}))");
-        usernameConfig.putString("manual","Un nom d'utilisateur contient au moins 3 caractères et commence par une lettre");
+        submit = WelcomeCodeTank.initButton(
+                (Button) findViewById(R.id.submit),
+                "Suivant"
+        );
 
-        emailConfig.putString("title", "Email");
-        emailConfig.putString("hint", "Entre ton adresse email");
-        emailConfig.putInt("type",TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-        emailConfig.putString("url",AppRouting.serverAdr+AppRouting.emailChk);
-        emailConfig.putString("reqParamName",USERMAIL);
-        emailConfig.putString("rule",".+@.+");
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override  public void onClick(View v) { submit(); }
+        });
 
-        String inputsBaseTag ="CustomInputFragment";
-        List<Bundle> inputConfigs = Arrays.asList(emailConfig,usernameConfig); //order matters : order on screen
+        try {
 
-        if (savedInstanceState != null)
-            for(int i =0; i<inputConfigs.size();i++)
-                myFragments.add(getSupportFragmentManager().findFragmentByTag(inputsBaseTag+i));
-        else
-            FragmentInjecter.inject(
-                    R.id.activity_signup,
-                    getSupportFragmentManager(),
-                    CustomInputFragment.installConfigs(inputConfigs),
-                    inputsBaseTag
+            inputsMap.put(USERMAIL, WelcomeCodeTank.initInput(
+                    (TextView) findViewById(R.id.input_title1),
+                    "Email",
+                    (EditText) findViewById(R.id.input_et1),
+                    "Entre ton adresse email",
+                    TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_EMAIL_ADDRESS,
+                    (TextView) findViewById(R.id.input_msg1)
+                    ).put("url", AppRouting.serverAdr + AppRouting.usernameChk)
+                            .put("rule", "((?=.*[a-z])^[a-zA-Z](\\w{2,}))")
+                            .put("manual", "Un nom d'utilisateur contient au moins 3 caractères et commence par une lettre")
+            );
+
+            inputsMap.put(USERNAME, WelcomeCodeTank.initInput(
+                    (TextView) findViewById(R.id.input_title2),
+                    "Nom d'utilisateur",
+                    (EditText) findViewById(R.id.input_et2),
+                    "Choisis ton nom sur Mood",
+                    TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PERSON_NAME,
+                    (TextView) findViewById(R.id.input_msg2)
+                    ).put("url", AppRouting.serverAdr + AppRouting.emailChk)
+                            .put("rule", ".+@.+")
             );
 
 
-        Bundle submitConfig = new Bundle();
-        submitConfig.putString("text", "Suivant");
+            submit.setEnabled(false);
 
-        String submitBaseTag ="CustomSubmitFragment";
-        List<Bundle> submitConfigs = Arrays.asList(submitConfig); //order matters : order on screen
+            for(final Map.Entry<String,JSONObject> entry : inputsMap.entrySet() )
+                ((EditText)entry.getValue().get("input")).addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
 
-        if (savedInstanceState != null)
-            for(int i =0; i<submitConfigs.size();i++)
-                myFragments.add(getSupportFragmentManager().findFragmentByTag(submitBaseTag+i));
-        else
-            FragmentInjecter.inject(
-                    R.id.activity_signup,
-                    getSupportFragmentManager(),
-                    CustomSubmitFragment.installConfigs(submitConfigs),
-                    submitBaseTag
-            );
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        try {
+                            TextView msg = (EditText)entry.getValue().get("msg");
+                            if(!Utils.matchRule(entry.getValue().getString("rule"), s.toString())) {
+                                if (entry.getValue().has("manual")) {
+                                    msg.setHeight(Utils.getMSGTVHeight(getResources()));
+                                    msg.setText(entry.getValue().getString("manual"));
+                                }
+                                return; //exit from onTextChanged without sending the charseq
+                            }
+                            msg.setText(""); //Reset/clear warning message if it passes the rule
+
+                            //if (onTheFly)
+                            queue.cancelAll(entry.getValue().getString("tag")); //cancel all the previous requests
+
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        queue = PostMan.sendRequest((PostMan.PostManClient)meGod,null,null,Request.Method.GET,"tag");
+                    }
+
+                    @Override public void afterTextChanged(Editable s) {}
+                });
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 
+
+    private void submit() {
+        Bundle b = new Bundle();
+        try {
+            b.putString(ChoosePasswordActivity.USERMAIL,
+                    ((EditText) inputsMap.get("email").get("input")).getText().toString());
+            b.putString(ChoosePasswordActivity.USERNAME,
+                    ((EditText) inputsMap.get("username").get("input")).getText().toString());
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+        WelcomeCodeTank.goNext(meGod, ChoosePasswordActivity.class, b, null, null, false);
+    }
 
     @Override
-    public void setInputET(String reqParamName, EditText input) { mapInputsET.put(reqParamName,input); }
+    public void onResquestResponse(String response) {
 
-    @Override
-    public void setMsgTV(String reqParamName, TextView tv) {
-        mapInputsMSGTV.put(reqParamName,tv);
     }
 
     @Override
-    public void setMapInputsTrafficLight(String reqParamName, boolean light) {
-        mapInputsTrafficLight.put(reqParamName,light);
+    public void onResquestError(VolleyError error) {
+
     }
-
-
-    @Override
-    public void onInputRequestResponse(String reqParamName, String response) {
-        setMapInputsTrafficLight(reqParamName,true);
-        mapInputsMSGTV.get(reqParamName).setText(""); //Reset/clear warning message if it passes the rule
-        mapInputsMSGTV.get(reqParamName).setHeight(0);
-        mapInputsMSGTV.get(reqParamName).setHeight(CustomInputFragment.getMSGTVHeight(getResources()));
-        mapInputsMSGTV.get(reqParamName).setText("Response: " + response.toString());
-    }
-
-    @Override
-    public void onInputRequestError(String reqParamName, Exception exception) {
-        setMapInputsTrafficLight(reqParamName,true); //non-blocking
-        Log.i("VolleyCallError","SignupActivity :: error : "+exception);
-    }
-
-    @Override
-    public void submit() {
-        for(Boolean ok : mapInputsTrafficLight.values())
-            if(!ok) {
-                Toast.makeText(meGod, "Au moins un champ est mal rempli", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        goNext();
-    }
-
-
-    private void goNext(){
-        Intent intent=new Intent(meGod,ChoosePasswordActivity.class);
-        intent.setAction(Intent.ACTION_SEND);
-        intent.setType("text/plain");
-        intent.putExtra(ChoosePasswordActivity.USERMAIL,mapInputsET.get("email").getText().toString());
-        intent.putExtra(ChoosePasswordActivity.USERNAME,mapInputsET.get("username").getText().toString());
-        startActivity(intent);
-    }
-
 
     //class end
 }

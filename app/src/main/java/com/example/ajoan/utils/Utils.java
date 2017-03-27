@@ -21,6 +21,10 @@ import java.util.regex.Pattern;
 
 public class Utils {
 
+    public final static String msgOnNetworkError= "Impossible de joindre le serveur! " +
+            "Merci de vérifier votre connexion internet ou essayez plus tard";
+
+
     public static float pixelsInDP(int dp,Resources resources){
         float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.getDisplayMetrics());
         return pixels;
@@ -88,10 +92,9 @@ public class Utils {
         return compileRequestURL(url,paramsMap);
     }
 
+
     public static void displayMSGOnNetworkError(Context context){
-        Toast.makeText(context, "Impossible de joindre le serveur! " +
-                        "Merci de vérifier votre connexion internet ou essayez plus tard",
-                Toast.LENGTH_LONG).show();
+        Toast.makeText(context, msgOnNetworkError, Toast.LENGTH_LONG).show();
     }
 
 }

@@ -17,6 +17,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.example.ajoan.MyApp;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.AppRouting;
 import com.example.ajoan.utils.Utils;
@@ -49,6 +50,8 @@ public class SignupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
 
+        queue = ((MyApp)getApplication()).queue;
+
         WelcomeCodeTank.initTextView((TextView) findViewById(R.id.pageTitle),"Comment te reconnaître ?");
 
         (submit = WelcomeCodeTank.initButton((Button) findViewById(R.id.submit),"Suivant",false)
@@ -64,9 +67,8 @@ public class SignupActivity extends AppCompatActivity {
                     "Entre ton adresse email",
                     TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_EMAIL_ADDRESS,
                     (TextView) findViewById(R.id.input_msg1)
-                    ).put("url", AppRouting.serverAdr + AppRouting.usernameChk)
-                            .put("rule", "((?=.*[a-z])^[a-zA-Z](\\w{2,}))")
-                            .put("manual", "Un nom d'utilisateur contient au moins 3 caractères et commence par une lettre")
+                    ).put("url", AppRouting.serverAdr + AppRouting.emailChk)
+                            .put("rule", ".+@.+")
             );
             inputsMap.put(USERNAME, WelcomeCodeTank.initInput(
                     (TextView) findViewById(R.id.input_title2),
@@ -75,26 +77,31 @@ public class SignupActivity extends AppCompatActivity {
                     "Choisis ton nom sur Mood",
                     TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PERSON_NAME,
                     (TextView) findViewById(R.id.input_msg2)
-                    ).put("url", AppRouting.serverAdr + AppRouting.emailChk)
-                            .put("rule", ".+@.+")
+                    ).put("url", AppRouting.serverAdr + AppRouting.usernameChk)
+                            .put("rule", "((?=.*[a-z])^[a-zA-Z](\\w{2,}))")
+                            .put("manual", "Un nom d'utilisateur contient au moins 3 caractères et commence par une lettre")
             );
 
-            for(final Map.Entry<String,JSONObject> entry : inputsMap.entrySet() )
-                ((EditText)entry.getValue().get("input")).addTextChangedListener(
+            for(final Map.Entry<String,JSONObject> entry : inputsMap.entrySet() ) {
+                final EditText inputET=((EditText) entry.getValue().get("input"));
+                final TextView msgTV=((TextView) entry.getValue().get("msg"));
+                inputET.addTextChangedListener(
                         new TextWatcher() {
-                            @Override  public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                            @Override
+                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                            }
 
                             @Override
                             public void onTextChanged(CharSequence s, int start, int before, int count) {
                                 try {
-                                    if(!WelcomeCodeTank.validInput(entry.getValue(),meGod))
+                                    if (!WelcomeCodeTank.validInput(entry.getValue(), meGod))
                                         return; //warning message already displayed, cant go further
 
                                     queue.cancelAll(entry.getKey()); //cancel all the previous this input related requests
 
                                     String reqStr = Utils.compileRequestURL(
                                             entry.getValue().getString("url"),
-                                            new String[]{ entry.getKey()+"->"+s.toString() }
+                                            new String[]{entry.getKey() + "->" + s.toString()}
                                     );
                                     Log.i("SignupActivity", "/onTextChanged : Sending this request:\n  -->" + reqStr);
 
@@ -106,27 +113,30 @@ public class SignupActivity extends AppCompatActivity {
                                                 public void onResponse(String response) {
                                                     Log.d("CustomInputFragment", "onErrorResponse : '" + response + "'");
                                                     try {
-                                                        inputsMap.get(entry.getKey()).put("valid",true);
+                                                        inputsMap.get(entry.getKey()).put("valid", true);
 
-                                                        int nbValid=0;
+                                                        int nbValid = 0;
                                                         synchronized (inputsMap) {
                                                             for (JSONObject inputState : inputsMap.values())
                                                                 if (inputState.getBoolean("valid"))
                                                                     nbValid++;
-                                                            if(nbValid==inputsMap.size())
+                                                            if (nbValid == inputsMap.size())
                                                                 submit.setEnabled(true);
                                                             else
                                                                 submit.setEnabled(false);
                                                         }
 
-                                                    } catch (JSONException e) {throw new RuntimeException(e);}
+                                                    } catch (JSONException e) {
+                                                        throw new RuntimeException(e);
+                                                    }
                                                 }
                                             },
                                             new Response.ErrorListener() {
                                                 @Override
                                                 public void onErrorResponse(VolleyError error) {
                                                     Log.d("CustomInputFragment", "onErrorResponse : '" + error + "'", error);
-                                                    Utils.displayMSGOnNetworkError(meGod);
+                                                    msgTV.setHeight(Utils.getMSGTVHeight(getResources()));
+                                                    msgTV.setText(Utils.msgOnNetworkError);
                                                 }
                                             }).setTag(entry.getKey())
                                     );
@@ -135,9 +145,11 @@ public class SignupActivity extends AppCompatActivity {
                                 }
                             }
 
-                            @Override public void afterTextChanged(Editable s) {}
+                            @Override
+                            public void afterTextChanged(Editable s) {
+                            }
                         });
-
+            }
         } catch (JSONException e) { throw new RuntimeException(e); }
     }
 

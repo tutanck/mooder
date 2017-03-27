@@ -1,6 +1,7 @@
 package com.example.ajoan.utils;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -47,6 +48,8 @@ public class WelcomeCodeTank {
     ){
         button.setText(text);
         button.setEnabled(enabled);
+        if(!enabled)
+            button.setBackgroundColor(Color.GRAY);
         return button;
     }
 
@@ -70,8 +73,5 @@ public class WelcomeCodeTank {
         }
         return true;
     }
-
-
-
 
 }

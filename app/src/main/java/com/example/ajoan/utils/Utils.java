@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
+import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -85,6 +86,12 @@ public class Utils {
             paramsMap.put(entry[0],entry[1]); //no performance here
         }
         return compileRequestURL(url,paramsMap);
+    }
+
+    public static void displayMSGOnNetworkError(Context context){
+        Toast.makeText(context, "Impossible de joindre le serveur! " +
+                        "Merci de vérifier votre connexion internet ou essayez plus tard",
+                Toast.LENGTH_LONG).show();
     }
 
 }

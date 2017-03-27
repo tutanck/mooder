@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -40,8 +41,6 @@ public class SignupActivity extends AppCompatActivity {
 
     private Map<String, JSONObject> inputsMap = new HashMap<>();
     private Button submit;
-
-    private int unlocked = 0;
 
     private RequestQueue queue;
 
@@ -88,10 +87,10 @@ public class SignupActivity extends AppCompatActivity {
                             @Override
                             public void onTextChanged(CharSequence s, int start, int before, int count) {
                                 try {
-                                    if(WelcomeCodeTank.validInput(entry.getValue(),meGod))
-                                        unlocked++;
-                                    
-                                    queue.cancelAll(entry.getValue().getString("tag")); //cancel all the previous requests
+                                    if(!WelcomeCodeTank.validInput(entry.getValue(),meGod))
+                                        return; //warning message already displayed, cant go further
+
+                                    queue.cancelAll(entry.getKey()); //cancel all the previous this input related requests
 
                                     String reqStr = Utils.compileRequestURL(
                                             entry.getValue().getString("url"),
@@ -106,14 +105,28 @@ public class SignupActivity extends AppCompatActivity {
                                                 @Override
                                                 public void onResponse(String response) {
                                                     Log.d("CustomInputFragment", "onErrorResponse : '" + response + "'");
+                                                    try {
+                                                        inputsMap.get(entry.getKey()).put("valid",true);
 
+                                                        int nbValid=0;
+                                                        synchronized (inputsMap) {
+                                                            for (JSONObject inputState : inputsMap.values())
+                                                                if (inputState.getBoolean("valid"))
+                                                                    nbValid++;
+                                                            if(nbValid==inputsMap.size())
+                                                                submit.setEnabled(true);
+                                                            else
+                                                                submit.setEnabled(false);
+                                                        }
+
+                                                    } catch (JSONException e) {throw new RuntimeException(e);}
                                                 }
                                             },
                                             new Response.ErrorListener() {
                                                 @Override
                                                 public void onErrorResponse(VolleyError error) {
                                                     Log.d("CustomInputFragment", "onErrorResponse : '" + error + "'", error);
-
+                                                    Utils.displayMSGOnNetworkError(meGod);
                                                 }
                                             }).setTag(entry.getKey())
                                     );

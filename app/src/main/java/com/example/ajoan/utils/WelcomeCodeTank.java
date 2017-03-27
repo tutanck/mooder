@@ -1,10 +1,6 @@
 package com.example.ajoan.utils;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -46,34 +42,36 @@ public class WelcomeCodeTank {
 
     public static Button initButton(
             Button button,
-            String text
+            String text,
+            boolean enabled
     ){
         button.setText(text);
+        button.setEnabled(enabled);
         return button;
     }
 
 
-    public static void goNext(
-            Context context,
-            Class activityClass,
-            Bundle bundle,
-            String action,
-            String type,
-            boolean finish
-    ){
-        Intent intent=new Intent(context,activityClass);
-
-        intent.setAction(action!=null?action:Intent.ACTION_SEND);
-
-        intent.setType(type!=null?type:"text/plain");
-
-        if(bundle!=null)
-            intent.putExtras(bundle);
-
-        context.startActivity(intent);
-
-        if(finish && context instanceof Activity)
-            ((Activity)context).finish();
+    public static boolean validInput(
+            JSONObject inputConf,
+            Context context
+    ) throws JSONException {
+        if(inputConf.has("rule")) {
+            TextView msgTV = (TextView) inputConf.get("msg");
+            EditText inputET = (EditText) inputConf.get("input");
+            if (!Utils.matchRule(inputConf.getString("rule"), inputET.getText().toString())) {
+                if (inputConf.has("manual")) {
+                    msgTV.setHeight(Utils.getMSGTVHeight(context.getResources()));
+                    msgTV.setText(inputConf.getString("manual"));
+                }
+                return false;
+            }
+            msgTV.setHeight(0);
+            msgTV.setText(""); //Reset/clear warning message if it passes the rule
+        }
+        return true;
     }
+
+
+
 
 }

@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,10 +13,11 @@ import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.AppRouting;
-import com.example.ajoan.utils.PostMan;
 import com.example.ajoan.utils.Utils;
 import com.example.ajoan.utils.WelcomeCodeTank;
 
@@ -29,7 +31,7 @@ import static android.text.InputType.TYPE_CLASS_TEXT;
 import static android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
 import static android.text.InputType.TYPE_TEXT_VARIATION_PERSON_NAME;
 
-public class SignupActivity extends AppCompatActivity implements PostMan.PostManClient{
+public class SignupActivity extends AppCompatActivity {
 
     private Context meGod = this;
 
@@ -48,22 +50,14 @@ public class SignupActivity extends AppCompatActivity implements PostMan.PostMan
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
 
-        WelcomeCodeTank.initTextView(
-                (TextView) findViewById(R.id.pageTitle),
-                "Comment te reconnaître ?"
-        );
+        WelcomeCodeTank.initTextView((TextView) findViewById(R.id.pageTitle),"Comment te reconnaître ?");
 
-        submit = WelcomeCodeTank.initButton(
-                (Button) findViewById(R.id.submit),
-                "Suivant"
-        );
-
-        submit.setOnClickListener(new View.OnClickListener() {
+        (submit = WelcomeCodeTank.initButton((Button) findViewById(R.id.submit),"Suivant",false)
+        ).setOnClickListener(new View.OnClickListener() {
             @Override  public void onClick(View v) { submit(); }
         });
 
         try {
-
             inputsMap.put(USERMAIL, WelcomeCodeTank.initInput(
                     (TextView) findViewById(R.id.input_title1),
                     "Email",
@@ -75,7 +69,6 @@ public class SignupActivity extends AppCompatActivity implements PostMan.PostMan
                             .put("rule", "((?=.*[a-z])^[a-zA-Z](\\w{2,}))")
                             .put("manual", "Un nom d'utilisateur contient au moins 3 caractères et commence par une lettre")
             );
-
             inputsMap.put(USERNAME, WelcomeCodeTank.initInput(
                     (TextView) findViewById(R.id.input_title2),
                     "Nom d'utilisateur",
@@ -87,45 +80,52 @@ public class SignupActivity extends AppCompatActivity implements PostMan.PostMan
                             .put("rule", ".+@.+")
             );
 
-
-            submit.setEnabled(false);
-
             for(final Map.Entry<String,JSONObject> entry : inputsMap.entrySet() )
-                ((EditText)entry.getValue().get("input")).addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    }
+                ((EditText)entry.getValue().get("input")).addTextChangedListener(
+                        new TextWatcher() {
+                            @Override  public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-                        try {
-                            TextView msg = (EditText)entry.getValue().get("msg");
-                            if(!Utils.matchRule(entry.getValue().getString("rule"), s.toString())) {
-                                if (entry.getValue().has("manual")) {
-                                    msg.setHeight(Utils.getMSGTVHeight(getResources()));
-                                    msg.setText(entry.getValue().getString("manual"));
+                            @Override
+                            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                                try {
+                                    if(WelcomeCodeTank.validInput(entry.getValue(),meGod))
+                                        unlocked++;
+                                    
+                                    queue.cancelAll(entry.getValue().getString("tag")); //cancel all the previous requests
+
+                                    String reqStr = Utils.compileRequestURL(
+                                            entry.getValue().getString("url"),
+                                            new String[]{ entry.getKey()+"->"+s.toString() }
+                                    );
+                                    Log.i("SignupActivity", "/onTextChanged : Sending this request:\n  -->" + reqStr);
+
+                                    queue.add((StringRequest) new StringRequest(
+                                            Request.Method.GET,
+                                            reqStr,
+                                            new Response.Listener<String>() {
+                                                @Override
+                                                public void onResponse(String response) {
+                                                    Log.d("CustomInputFragment", "onErrorResponse : '" + response + "'");
+
+                                                }
+                                            },
+                                            new Response.ErrorListener() {
+                                                @Override
+                                                public void onErrorResponse(VolleyError error) {
+                                                    Log.d("CustomInputFragment", "onErrorResponse : '" + error + "'", error);
+
+                                                }
+                                            }).setTag(entry.getKey())
+                                    );
+                                } catch (JSONException e) {
+                                    throw new RuntimeException(e);
                                 }
-                                return; //exit from onTextChanged without sending the charseq
                             }
-                            msg.setText(""); //Reset/clear warning message if it passes the rule
 
-                            //if (onTheFly)
-                            queue.cancelAll(entry.getValue().getString("tag")); //cancel all the previous requests
+                            @Override public void afterTextChanged(Editable s) {}
+                        });
 
-                        } catch (JSONException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                        queue = PostMan.sendRequest((PostMan.PostManClient)meGod,null,null,Request.Method.GET,"tag");
-                    }
-
-                    @Override public void afterTextChanged(Editable s) {}
-                });
-
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-
+        } catch (JSONException e) { throw new RuntimeException(e); }
     }
 
 
@@ -140,17 +140,7 @@ public class SignupActivity extends AppCompatActivity implements PostMan.PostMan
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
-        WelcomeCodeTank.goNext(meGod, ChoosePasswordActivity.class, b, null, null, false);
-    }
-
-    @Override
-    public void onResquestResponse(String response) {
-
-    }
-
-    @Override
-    public void onResquestError(VolleyError error) {
-
+        Utils.nextActivity(meGod, ChoosePasswordActivity.class, b, null, null, false);
     }
 
     //class end

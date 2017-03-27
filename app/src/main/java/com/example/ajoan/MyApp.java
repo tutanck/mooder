@@ -3,6 +3,9 @@ package com.example.ajoan;
 import android.app.Application;
 import android.location.Location;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
+
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -14,6 +17,8 @@ import java.util.Map;
 /**
  * Created by AJoan on 13/12/2016. */
 public class MyApp extends Application{
+
+    public RequestQueue queue;
 
     public static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 0;
 
@@ -33,4 +38,9 @@ public class MyApp extends Application{
     //Pas de constructeur , le syteme va créer une instance singleton de l'application
 
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        queue = Volley.newRequestQueue(getApplicationContext());
+    }
 }

@@ -111,8 +111,7 @@ public class ChoosePasswordActivity extends AppCompatActivity {
                             @Override
                             public void onTextChanged(CharSequence s, int start, int before, int count) {
                                 try {
-                                    if (entry.getKey().equals(USERPASS) &&
-                                            !FormManager.validInput(formValidationMap,entry.getKey(),entry.getValue(), meGod,submitBtn))
+                                    if (!FormManager.validInput(formValidationMap,entry.getKey(),entry.getValue(), meGod,submitBtn))
                                         return; //warning message already displayed, cant go further
 
                                         if (entry.getKey().equals(USERPASS2) && !

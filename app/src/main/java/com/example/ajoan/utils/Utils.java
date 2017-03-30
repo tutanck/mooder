@@ -21,8 +21,9 @@ import java.util.regex.Pattern;
 
 public class Utils {
 
-    public final static String msgOnNetworkError= "Impossible de joindre le serveur! " +
-            "Merci de vérifier votre connexion internet ou essayez plus tard";
+    public final static String msgOnNetworkError= "Impossible de joindre le serveur!\n " +
+            "- Merci de vérifier votre connexion internet \n" +
+            "- Ou essayez plus tard";
 
 
     public static float pixelsInDP(int dp,Resources resources){
@@ -37,10 +38,6 @@ public class Utils {
         boolean respected = matcher.matches();
         Log.i("Utils.matchRule", s + " respects "+ rule +" : "+ respected);
         return respected;
-    }
-
-    public static int getMSGTVHeight(Resources resources){
-        return (int)Utils.pixelsInDP(36,resources);
     }
 
     public static void nextActivity(
@@ -80,7 +77,7 @@ public class Utils {
 
     public static String compileRequestURL(
             String url,
-            String[] params
+            String... params
     ){
         HashMap<String,String> paramsMap = new HashMap<>();
         for(String str : params) {

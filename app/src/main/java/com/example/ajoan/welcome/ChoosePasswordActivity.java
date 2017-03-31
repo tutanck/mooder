@@ -52,7 +52,6 @@ public class ChoosePasswordActivity extends AppCompatActivity {
     private final static String PASS_RULE = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,})";
 
     private Map<String, JSONObject> inputsMap = new HashMap<>();
-    private Map<String, Boolean> formValidationMap = new HashMap<>();
     private Button submitBtn;
 
     @Override
@@ -100,8 +99,6 @@ public class ChoosePasswordActivity extends AppCompatActivity {
 
             for(final Map.Entry<String,JSONObject> entry : inputsMap.entrySet() ) {
 
-                formValidationMap.put(entry.getKey(),false);
-
                 ((EditText) entry.getValue().get("input")).addTextChangedListener(
                         new TextWatcher() {
                             @Override
@@ -111,21 +108,21 @@ public class ChoosePasswordActivity extends AppCompatActivity {
                             @Override
                             public void onTextChanged(CharSequence s, int start, int before, int count) {
                                 try {
-                                    if (!FormManager.validInput(formValidationMap,entry.getKey(),entry.getValue(), meGod,submitBtn))
+                                    if (!FormManager.validInput(null, entry.getKey(), entry.getValue(), meGod, submitBtn))
                                         return; //warning message already displayed, cant go further
 
-                                        if (entry.getKey().equals(USERPASS2) && !
-                                                (((EditText) inputsMap.get(USERPASS).get("input")).getText().toString())
-                                                        .equals
-                                                                (((EditText) inputsMap.get(USERPASS2).get("input")).getText().toString())
-                                                ) {
-                                            FormManager.showMsgTV(((TextView) inputsMap.get(USERPASS2).get("msg")),
-                                                    "La vérification ne correspond pas au mot de passe", getResources());
-                                            return;
-                                        }else
-                                            FormManager.dropMsgTV(((TextView) inputsMap.get(USERPASS2).get("msg")));
+                                    if (!
+                                            (((EditText) inputsMap.get(USERPASS).get("input")).getText().toString())
+                                                    .equals
+                                                            (((EditText) inputsMap.get(USERPASS2).get("input")).getText().toString())
+                                            ) {
+                                        FormManager.showMsgTV(((TextView) inputsMap.get(USERPASS2).get("msg")),
+                                                "La vérification ne correspond pas au mot de passe", getResources());
+                                        return;
+                                    }
 
-                                    FormManager.validFormOnInputChange(formValidationMap,entry.getKey(),submitBtn);
+                                    FormManager.dropMsgTV(((TextView) inputsMap.get(USERPASS2).get("msg")));
+                                    FormManager.enableButton(submitBtn);
                                 } catch (JSONException e) {
                                     throw new RuntimeException(e);
                                 }
@@ -164,7 +161,7 @@ public class ChoosePasswordActivity extends AppCompatActivity {
                                 Log.i("VolleyCallResponse","response : "+response);
                                 Bundle b = new Bundle();
                                 b.putString(LoginActivity.USERNAME,getIntent().getStringExtra(USERNAME));
-                                Utils.nextActivity(meGod, LoginActivity.class, b, null, null, false);
+                                Utils.nextActivity(meGod, LoginActivity.class, b, null, null, null, false);
                                 FormManager.enableButton(submitBtn);
                             }
                         },
@@ -174,6 +171,13 @@ public class ChoosePasswordActivity extends AppCompatActivity {
                                 onTheFly = false;
                                 Toast.makeText(meGod,Utils.msgOnNetworkError,Toast.LENGTH_LONG).show();
                                 FormManager.enableButton(submitBtn);
+
+
+
+                                //todo rem
+                                Bundle b = new Bundle();
+                                b.putString(LoginActivity.USERNAME,getIntent().getStringExtra(USERNAME));
+                                Utils.nextActivity(meGod, LoginActivity.class, b, null, null, null, false);
                             }
                         }));
                 onTheFly = true;

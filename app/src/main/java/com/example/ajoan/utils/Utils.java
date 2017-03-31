@@ -46,6 +46,7 @@ public class Utils {
             Bundle bundle,
             String action,
             String type,
+            Integer flags,
             boolean finish
     ){
         Intent intent=new Intent(context,activityClass);
@@ -53,6 +54,9 @@ public class Utils {
         intent.setAction(action!=null?action:Intent.ACTION_SEND);
 
         intent.setType(type!=null?type:"text/plain");
+
+        if(flags!=null)
+            intent.setFlags(flags);
 
         if(bundle!=null)
             intent.putExtras(bundle);
@@ -62,6 +66,9 @@ public class Utils {
         if(finish && context instanceof Activity)
             ((Activity)context).finish();
     }
+
+
+
 
     public static String compileRequestURL(
             String url,

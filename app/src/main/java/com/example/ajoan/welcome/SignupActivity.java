@@ -176,7 +176,7 @@ public class SignupActivity extends AppCompatActivity {
             b.putString(ChoosePasswordActivity.USERNAME,
                     ((EditText) inputsMap.get("username").get("input")).getText().toString());
 
-            Utils.nextActivity(meGod, ChoosePasswordActivity.class, b, null, null, false);
+            Utils.nextActivity(meGod, ChoosePasswordActivity.class, b, null, null, null, false);
 
         } catch (JSONException e) {
             throw new RuntimeException(e);

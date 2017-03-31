@@ -85,7 +85,8 @@ public class FormManager extends ComponentManager {
             Context context,
             Button submitBtn
     ) throws JSONException {
-        formValidationMap.put(inputValidationKey,false);
+        if(formValidationMap!=null)
+            formValidationMap.put(inputValidationKey,false);
         disableButton(submitBtn);
         dropProgressBar((ProgressBar) inputConf.get("pb"));
 

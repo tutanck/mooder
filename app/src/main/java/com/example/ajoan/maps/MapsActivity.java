@@ -270,7 +270,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     /**
-     * Open the list mode activity
+     * Open the list mode intent
      */
     private void openEventsList(){
         Intent launchNextActivity =new Intent(meGod, EventsListActivity.class);
@@ -288,7 +288,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onBackPressed() {
         if (exit)
-            finish(); // finish activity
+            finish(); // finish intent
         else {
             Toast.makeText(this, "Press Back again to Exit",
                     Toast.LENGTH_SHORT).show();
@@ -304,7 +304,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     /**
-     * local method that open new activity for an event's details
+     * local method that open new intent for an event's details
      * @param eventID
      */
     private void openEvent(String eventID){

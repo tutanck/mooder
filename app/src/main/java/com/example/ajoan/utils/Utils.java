@@ -40,31 +40,16 @@ public class Utils {
         return respected;
     }
 
-    public static void nextActivity(
-            Context context,
-            Class activityClass,
-            Bundle bundle,
+    public static Intent intent(
+            Intent intent,
             String action,
-            String type,
-            Integer flags,
-            boolean finish
+            String type
     ){
-        Intent intent=new Intent(context,activityClass);
-
         intent.setAction(action!=null?action:Intent.ACTION_SEND);
 
         intent.setType(type!=null?type:"text/plain");
 
-        if(flags!=null)
-            intent.setFlags(flags);
-
-        if(bundle!=null)
-            intent.putExtras(bundle);
-
-        context.startActivity(intent);
-
-        if(finish && context instanceof Activity)
-            ((Activity)context).finish();
+        return intent;
     }
 
 

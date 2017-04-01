@@ -73,7 +73,7 @@ public class EventAdapter extends ArrayAdapter<JSONObject> {
     }
 
     /**
-     * local method that open new activity for an event's details
+     * local method that open new intent for an event's details
      * @param eventID
      */
     private void openEvent(String eventID){

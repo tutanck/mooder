@@ -2,7 +2,9 @@ package com.example.ajoan.welcome;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.provider.Settings;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -11,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -70,7 +73,8 @@ public class LoginActivity extends AppCompatActivity {
         RelativeLayout title = (RelativeLayout)findViewById(R.id.title);
         RelativeLayout input1 = (RelativeLayout)findViewById(R.id.input1);
         RelativeLayout input2 = (RelativeLayout)findViewById(R.id.input2);
-        final RelativeLayout submit = (RelativeLayout)findViewById(R.id.submit);
+        RelativeLayout submit = (RelativeLayout)findViewById(R.id.submit);
+        LinearLayout linksLayout = (LinearLayout)findViewById(R.id.linksLayout);
 
         FormManager.initTextView((TextView) title.findViewById(R.id.pageTitle),"Bienvenu");
 
@@ -78,6 +82,45 @@ public class LoginActivity extends AppCompatActivity {
         ).setOnClickListener(new View.OnClickListener() {
             @Override  public void onClick(View v) { submit(); }
         });
+
+
+        TextView link1 = new TextView(meGod);
+        link1.setText("Nouveau sur Mood");
+        link1.setTextColor(ContextCompat.getColor(meGod, R.color.colorAccent));
+        link1.setTypeface(Typeface.DEFAULT, Typeface.BOLD_ITALIC);
+        link1.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(
+                                Utils.intent(new Intent(meGod, SignupActivity.class), null, null)
+                        );
+                        finish();
+                    }
+                }
+        );
+        linksLayout.addView(link1);
+
+        TextView link2 = new TextView(meGod);
+        link2.setText("  |  ");
+        linksLayout.addView(link2);
+
+        TextView link3 = new TextView(meGod);
+        link3.setText("Mot de passe oublié");
+        link3.setTextColor(ContextCompat.getColor(meGod, R.color.colorAccent));
+        link3.setTypeface(Typeface.DEFAULT, Typeface.BOLD_ITALIC);
+        link3.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(
+                                Utils.intent(new Intent(meGod, SignupActivity.class), null, null)
+                        );
+                        finish();
+                    }
+                }
+        );
+        linksLayout.addView(link3);
 
         try {
             inputsMap.put(USERNAME, FormManager.initInput(
@@ -164,8 +207,11 @@ public class LoginActivity extends AppCompatActivity {
                             public void onResponse(String response) {
                                 onTheFly = false;
                                 Log.i("VolleyCallResponse","response : "+response);
-                                Utils.nextActivity(meGod, MapsActivity.class, null, null, null,
-                                        Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK, false);
+                                startActivity(
+                                        Utils.intent(new Intent(meGod, MapsActivity.class), null, null)
+                                                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                );
+
                                 //todo verifier qu il clear bien les previous task ::later
                                 //todo store user id and response content username
 
@@ -181,8 +227,10 @@ public class LoginActivity extends AppCompatActivity {
                                 FormManager.enableButton(submitBtn);
 
                                 //todo rem
-                                Utils.nextActivity(meGod, MapsActivity.class, null, null, null,
-                                        Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK, false);
+                                startActivity(
+                                        Utils.intent(new Intent(meGod, MapsActivity.class), null, null)
+                                                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                );
                             }
                         }));
                 onTheFly = true;

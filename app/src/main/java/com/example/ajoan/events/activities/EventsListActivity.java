@@ -180,7 +180,7 @@ public class EventsListActivity extends AppCompatActivity implements EventsListF
 
 
     /**
-     * Fill the activity's events list with events that are retrieved from MyApp's shared eventsMap
+     * Fill the intent's events list with events that are retrieved from MyApp's shared eventsMap
      */
     private void fillEventsList(){
         ea.clear(); //unload list first then reload it with fresh values
@@ -219,7 +219,7 @@ public class EventsListActivity extends AppCompatActivity implements EventsListF
 
 
     /**
-     * Open the map mode activity
+     * Open the map mode intent
      */
     private void openEventsMap(){
         Intent launchNextActivity =new Intent(meGod, MapsActivity.class);
@@ -236,7 +236,7 @@ public class EventsListActivity extends AppCompatActivity implements EventsListF
     @Override
     public void onBackPressed() {
         if (exit)
-            finish(); // finish activity
+            finish(); // finish intent
         else {
             Toast.makeText(this, "Press Back again to Exit",
                     Toast.LENGTH_SHORT).show();

@@ -1,6 +1,9 @@
 package com.example.ajoan.welcome;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Typeface;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -9,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -59,6 +63,7 @@ public class SignupActivity extends AppCompatActivity {
         RelativeLayout input1 = (RelativeLayout)findViewById(R.id.input1);
         RelativeLayout input2 = (RelativeLayout)findViewById(R.id.input2);
         RelativeLayout submit = (RelativeLayout)findViewById(R.id.submit);
+        LinearLayout linksLayout = (LinearLayout)findViewById(R.id.linksLayout);
 
         FormManager.initTextView((TextView) title.findViewById(R.id.pageTitle),"Comment te reconnaître ?");
 
@@ -66,6 +71,23 @@ public class SignupActivity extends AppCompatActivity {
         ).setOnClickListener(new View.OnClickListener() {
             @Override  public void onClick(View v) { submit(); }
         });
+
+        TextView link1 = new TextView(meGod);
+        link1.setText("J'ai déjà un compte");
+        link1.setTextColor(ContextCompat.getColor(meGod, R.color.colorAccent));
+        link1.setTypeface(Typeface.DEFAULT, Typeface.BOLD_ITALIC);
+        link1.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(
+                                Utils.intent(new Intent(meGod, LoginActivity.class), null, null)
+                        );
+                        finish();
+                    }
+                }
+        );
+        linksLayout.addView(link1);
 
         try {
             inputsMap.put(USERMAIL, FormManager.initInput(
@@ -176,7 +198,9 @@ public class SignupActivity extends AppCompatActivity {
             b.putString(ChoosePasswordActivity.USERNAME,
                     ((EditText) inputsMap.get("username").get("input")).getText().toString());
 
-            Utils.nextActivity(meGod, ChoosePasswordActivity.class, b, null, null, null, false);
+            startActivity(
+                    Utils.intent(new Intent(meGod, ChoosePasswordActivity.class), null, null)
+                    ,b);
 
         } catch (JSONException e) {
             throw new RuntimeException(e);

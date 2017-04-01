@@ -1,6 +1,7 @@
 package com.example.ajoan.welcome;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -64,7 +65,7 @@ public class ChoosePasswordActivity extends AppCompatActivity {
         RelativeLayout title = (RelativeLayout)findViewById(R.id.title);
         RelativeLayout input1 = (RelativeLayout)findViewById(R.id.input1);
         RelativeLayout input2 = (RelativeLayout)findViewById(R.id.input2);
-        final RelativeLayout submit = (RelativeLayout)findViewById(R.id.submit);
+        RelativeLayout submit = (RelativeLayout)findViewById(R.id.submit);
 
         FormManager.initTextView((TextView) title.findViewById(R.id.pageTitle),"Choisis ton mot de passe");
 
@@ -161,7 +162,11 @@ public class ChoosePasswordActivity extends AppCompatActivity {
                                 Log.i("VolleyCallResponse","response : "+response);
                                 Bundle b = new Bundle();
                                 b.putString(LoginActivity.USERNAME,getIntent().getStringExtra(USERNAME));
-                                Utils.nextActivity(meGod, LoginActivity.class, b, null, null, null, false);
+
+                                startActivity(
+                                        Utils.intent(new Intent(meGod, LoginActivity.class), null, null)
+                                                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                        ,b);
                                 FormManager.enableButton(submitBtn);
                             }
                         },
@@ -172,12 +177,13 @@ public class ChoosePasswordActivity extends AppCompatActivity {
                                 Toast.makeText(meGod,Utils.msgOnNetworkError,Toast.LENGTH_LONG).show();
                                 FormManager.enableButton(submitBtn);
 
-
-
                                 //todo rem
                                 Bundle b = new Bundle();
                                 b.putString(LoginActivity.USERNAME,getIntent().getStringExtra(USERNAME));
-                                Utils.nextActivity(meGod, LoginActivity.class, b, null, null, null, false);
+                                startActivity(
+                                        Utils.intent(new Intent(meGod, LoginActivity.class), null, null)
+                                                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                        ,b);
                             }
                         }));
                 onTheFly = true;

@@ -138,7 +138,6 @@ public class SignupActivity extends AppCompatActivity {
 
                                 try {
 
-
                                     if (!FormManager.validInput(formValidationMap,entry.getKey(),entry.getValue(),meGod,submitBtn))
                                         return; //warning message already displayed, cant go further
 
@@ -184,7 +183,6 @@ public class SignupActivity extends AppCompatActivity {
                                                 }
                                             }).setTag(entry.getKey())
                                     );
-
 
 
                                 } catch (JSONException e) {

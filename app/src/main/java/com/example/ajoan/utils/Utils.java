@@ -55,10 +55,11 @@ public class Utils {
         String reqStr = url;
         if(params!=null && params.size()>0)
             reqStr+="?";
-        int i=0;
+        int i=1;
         for(Map.Entry<String,String> entry : params.entrySet()) {
             reqStr += entry.getKey() + "=" + entry.getValue();
-            if()
+            if(i++ <params.size())
+                reqStr+="&";
         }
         return reqStr;
     }

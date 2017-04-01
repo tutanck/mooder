@@ -24,6 +24,7 @@ import com.example.ajoan.MyApp;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.AppRouting;
 import com.example.ajoan.utils.FormManager;
+import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
 
 import org.json.JSONException;
@@ -35,7 +36,7 @@ import java.util.Map;
 import static android.text.InputType.TYPE_CLASS_TEXT;
 import static android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
 
-public class ChoosePasswordActivity extends AppCompatActivity {
+public class ChoosePassActivity extends AppCompatActivity {
 
     private Context meGod = this;
 
@@ -49,8 +50,6 @@ public class ChoosePasswordActivity extends AppCompatActivity {
     //internal inputs
     private final static String USERPASS ="pass";
     private final static String USERPASS2 ="confirm";
-
-    private final static String PASS_RULE = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,})";
 
     private Map<String, JSONObject> inputsMap = new HashMap<>();
     private Button submitBtn;
@@ -67,7 +66,7 @@ public class ChoosePasswordActivity extends AppCompatActivity {
         RelativeLayout input2 = (RelativeLayout)findViewById(R.id.input2);
         RelativeLayout submit = (RelativeLayout)findViewById(R.id.submit);
 
-        FormManager.initTextView((TextView) title.findViewById(R.id.pageTitle),"Choisis ton mot de passe");
+        FormManager.initTextView((TextView) title.findViewById(R.id.pageTitle),"Choix du mot de passe");
 
         (submitBtn = FormManager.initButton((Button) submit.findViewById(R.id.submitBtn),"Suivant",false)
         ).setOnClickListener(new View.OnClickListener() {
@@ -79,11 +78,11 @@ public class ChoosePasswordActivity extends AppCompatActivity {
                     (TextView) input1.findViewById(R.id.inputTitle),
                     "Mot de passe",
                     (EditText) input1.findViewById(R.id.inputET),
-                    "Choisis ton mot de passe",
+                    "Mot de passe",
                     TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PASSWORD,
                     (ProgressBar) input1.findViewById(R.id.inputPB),
                     (TextView) input1.findViewById(R.id.inputMSG)
-                    ).put("rule", PASS_RULE)
+                    ).put("rule", Rules.PASS_RULE)
                             .put("manual", "Il faut au moins 8 caractères dont au moins un chiffre, une Majuscule et une minuscule")
             );
 
@@ -150,7 +149,7 @@ public class ChoosePasswordActivity extends AppCompatActivity {
                         USERPASS+"->"+((EditText)inputsMap.get(USERPASS).get("input")).getText()
                 );
 
-                Log.i("ChoosePasswordActivity", "/submit : Sending this request:\n  -->" + reqStr);
+                Log.i("ChoosePassActivity", "/submit : Sending this request:\n  -->" + reqStr);
 
                 queue.add(new StringRequest(
                         Request.Method.POST,

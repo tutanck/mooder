@@ -29,6 +29,7 @@ import com.example.ajoan.maps.MapsActivity;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.AppRouting;
 import com.example.ajoan.utils.FormManager;
+import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
 
 import org.json.JSONException;
@@ -55,9 +56,6 @@ public class LoginActivity extends AppCompatActivity {
     //external inputs
     public final static String USERNAME = "username";
     private final static String USERPASS ="pass";
-
-    private final static String NON_EMPTY_RULE = ".+";
-
 
     private Map<String, JSONObject> inputsMap = new HashMap<>();
     private Map<String, Boolean> formValidationMap = new HashMap<>();
@@ -114,7 +112,7 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         startActivity(
-                                Utils.intent(new Intent(meGod, SignupActivity.class), null, null)
+                                Utils.intent(new Intent(meGod, ForgotPassActivity.class), null, null)
                         );
                         finish();
                     }
@@ -131,18 +129,18 @@ public class LoginActivity extends AppCompatActivity {
                     TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PERSON_NAME,
                     (ProgressBar) input1.findViewById(R.id.inputPB),
                     (TextView) input1.findViewById(R.id.inputMSG)
-                    ).put("rule",NON_EMPTY_RULE)
+                    ).put("rule", Rules.NON_EMPTY_RULE)
             );
 
             inputsMap.put(USERPASS, FormManager.initInput(
                     (TextView) input2.findViewById(R.id.inputTitle),
                     "Mot de passe",
                     (EditText) input2.findViewById(R.id.inputET),
-                    "Entre ton mot de passe",
+                    "Mot de passe",
                     TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PASSWORD,
                     (ProgressBar) input2.findViewById(R.id.inputPB),
                     (TextView) input2.findViewById(R.id.inputMSG)
-                    ).put("rule",NON_EMPTY_RULE)
+                    ).put("rule",Rules.NON_EMPTY_RULE)
             );
 
             String storedUname = getIntent().getStringExtra(USERNAME);

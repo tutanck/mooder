@@ -27,6 +27,7 @@ import com.example.ajoan.MyApp;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.AppRouting;
 import com.example.ajoan.utils.FormManager;
+import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
 
 import org.json.JSONException;
@@ -65,7 +66,7 @@ public class SignupActivity extends AppCompatActivity {
         RelativeLayout submit = (RelativeLayout)findViewById(R.id.submit);
         LinearLayout linksLayout = (LinearLayout)findViewById(R.id.linksLayout);
 
-        FormManager.initTextView((TextView) title.findViewById(R.id.pageTitle),"Comment te reconnaître ?");
+        FormManager.initTextView((TextView) title.findViewById(R.id.pageTitle),"Nouveau sur Mood");
 
         (submitBtn = FormManager.initButton((Button) submit.findViewById(R.id.submitBtn),"Suivant",false)
         ).setOnClickListener(new View.OnClickListener() {
@@ -99,7 +100,7 @@ public class SignupActivity extends AppCompatActivity {
                     (ProgressBar) input1.findViewById(R.id.inputPB),
                     (TextView) input1.findViewById(R.id.inputMSG)
                     ).put("url", AppRouting.serverAdr + AppRouting.emailChk)
-                            .put("rule", ".+@.+")
+                            .put("rule", Rules.USERNMAIL_RULE)
             );
 
             inputsMap.put(USERNAME, FormManager.initInput(
@@ -111,7 +112,7 @@ public class SignupActivity extends AppCompatActivity {
                     (ProgressBar) input2.findViewById(R.id.inputPB),
                     (TextView) input2.findViewById(R.id.inputMSG)
                     ).put("url", AppRouting.serverAdr + AppRouting.usernameChk)
-                            .put("rule", "((?=.*[a-z])^[a-zA-Z](\\w{2,}))")
+                            .put("rule", Rules.USERNAME_RULE)
                             .put("manual", "Un nom d'utilisateur contient au moins 3 caractères et commence par une lettre")
             );
 
@@ -192,14 +193,14 @@ public class SignupActivity extends AppCompatActivity {
 
             Bundle b = new Bundle();
 
-            b.putString(ChoosePasswordActivity.USERMAIL,
+            b.putString(ChoosePassActivity.USERMAIL,
                     ((EditText) inputsMap.get("email").get("input")).getText().toString());
 
-            b.putString(ChoosePasswordActivity.USERNAME,
+            b.putString(ChoosePassActivity.USERNAME,
                     ((EditText) inputsMap.get("username").get("input")).getText().toString());
 
             startActivity(
-                    Utils.intent(new Intent(meGod, ChoosePasswordActivity.class), null, null)
+                    Utils.intent(new Intent(meGod, ChoosePassActivity.class), null, null)
                     ,b);
 
         } catch (JSONException e) {

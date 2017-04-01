@@ -16,5 +16,7 @@ public class AppRouting {
 
     public static String signin="signin";
 
+    public static String forgotPass="yooooooooooooo";
+
 
 }

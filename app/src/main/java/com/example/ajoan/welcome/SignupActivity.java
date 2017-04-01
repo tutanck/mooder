@@ -16,7 +16,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -26,7 +25,10 @@ import com.android.volley.toolbox.StringRequest;
 import com.example.ajoan.MyApp;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.AppRouting;
+import com.example.ajoan.utils.Butler;
 import com.example.ajoan.utils.FormManager;
+import com.example.ajoan.utils.Messages;
+import com.example.ajoan.utils.MoodClient;
 import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
 
@@ -135,6 +137,8 @@ public class SignupActivity extends AppCompatActivity {
                                 queue.cancelAll(entry.getKey()); //cancel all the previous this input related requests
 
                                 try {
+
+
                                     if (!FormManager.validInput(formValidationMap,entry.getKey(),entry.getValue(),meGod,submitBtn))
                                         return; //warning message already displayed, cant go further
 
@@ -147,32 +151,42 @@ public class SignupActivity extends AppCompatActivity {
                                     );
                                     Log.i("SignupActivity", "/onTextChanged : Sending this request:\n  -->" + reqStr);
 
+
                                     queue.add((StringRequest) new StringRequest(
                                             Request.Method.GET,
                                             reqStr,
-                                            new Response.Listener<String>() {
+                                            new MoodClient() {
+                                                @Override
+                                                public void onReply(int rpcode, String message, JSONObject result) {
+                                                    FormManager.validFormOnInputChange(formValidationMap,entry.getKey(),submitBtn);
+                                                }
+
+                                                @Override
+                                                public void onIssue(int iscode) {
+                                                    msgTV.setText(Messages.remote.get(iscode));
+                                                }
+
                                                 @Override
                                                 public void onResponse(String response) {
-                                                    Log.d("CustomInputFragment", "onErrorResponse : '" + response + "'");
+                                                    Log.i("SignupActivity", "onResponse : '" + response + "'");
                                                     FormManager.dropProgressBar(checkingPB);
                                                     FormManager.dropMsgTV(msgTV);
-                                                    FormManager.validFormOnInputChange(formValidationMap,entry.getKey(),submitBtn);
+                                                    Butler.popNserve(meGod,this,response);
                                                 }
                                             },
                                             new Response.ErrorListener() {
                                                 @Override
                                                 public void onErrorResponse(VolleyError error) {
-                                                    Log.d("CustomInputFragment", "onErrorResponse : '" + error + "'", error);
-
+                                                    Log.e("SignupActivity", "onErrorResponse : '" + error + "'", error);
                                                     FormManager.dropProgressBar(checkingPB);
                                                     FormManager.dropMsgTV(msgTV);
-                                                    Toast.makeText(meGod,Utils.msgOnNetworkError,Toast.LENGTH_LONG).show();
-
-                                                    //todo rem
-                                                    FormManager.validFormOnInputChange(formValidationMap,entry.getKey(),submitBtn);
+                                                    Utils.displayMSGOnNetworkError(meGod);
                                                 }
                                             }).setTag(entry.getKey())
                                     );
+
+
+
                                 } catch (JSONException e) {
                                     throw new RuntimeException(e);
                                 }
@@ -190,19 +204,16 @@ public class SignupActivity extends AppCompatActivity {
 
     private void submit() {
         try {
-
             Bundle b = new Bundle();
-
             b.putString(ChoosePassActivity.USERMAIL,
                     ((EditText) inputsMap.get("email").get("input")).getText().toString());
-
             b.putString(ChoosePassActivity.USERNAME,
                     ((EditText) inputsMap.get("username").get("input")).getText().toString());
 
             startActivity(
                     Utils.intent(new Intent(meGod, ChoosePassActivity.class), null, null)
-                    ,b);
-
+                            .putExtras(b)
+                    );
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }

@@ -13,7 +13,6 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -128,7 +127,7 @@ public class ForgotPassActivity extends AppCompatActivity {
                             @Override
                             public void onResponse(String response) {
                                 onTheFly = false;
-                                Log.i("VolleyCallResponse","response : "+response);
+                                Log.i("ForgotPassActivity","onResponse : "+response);
                                 startActivity(
                                         Utils.intent(new Intent(meGod, LoginActivity.class), null, null)
                                                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -144,15 +143,10 @@ public class ForgotPassActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
+                                Log.e("ForgotPassActivity", "onErrorResponse : '" + error + "'", error);
                                 onTheFly = false;
-                                Toast.makeText(meGod,Utils.msgOnNetworkError,Toast.LENGTH_LONG).show();
+                                Utils.displayMSGOnNetworkError(meGod);
                                 FormManager.enableButton(submitBtn);
-
-                                //todo rem
-                                startActivity(
-                                        Utils.intent(new Intent(meGod, LoginActivity.class), null, null)
-                                                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                                );
                             }
                         }));
                 onTheFly = true;

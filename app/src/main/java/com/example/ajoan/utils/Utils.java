@@ -1,10 +1,8 @@
 package com.example.ajoan.utils;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
 import android.widget.Toast;
@@ -20,11 +18,6 @@ import java.util.regex.Pattern;
  */
 
 public class Utils {
-
-    public final static String msgOnNetworkError= "Impossible de joindre le serveur!\n " +
-            "- Merci de vérifier votre connexion internet \n" +
-            "- Ou essayez plus tard";
-
 
     public static float pixelsInDP(int dp,Resources resources){
         float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.getDisplayMetrics());
@@ -62,8 +55,11 @@ public class Utils {
         String reqStr = url;
         if(params!=null && params.size()>0)
             reqStr+="?";
-        for(Map.Entry<String,String> entry : params.entrySet())
-            reqStr+=entry.getKey()+"="+entry.getValue();
+        int i=0;
+        for(Map.Entry<String,String> entry : params.entrySet()) {
+            reqStr += entry.getKey() + "=" + entry.getValue();
+            if()
+        }
         return reqStr;
     }
 
@@ -83,7 +79,15 @@ public class Utils {
 
 
     public static void displayMSGOnNetworkError(Context context){
-        Toast.makeText(context, msgOnNetworkError, Toast.LENGTH_LONG).show();
+        displayMSG(context,Messages.msgOnNetworkError);
     }
 
+    public static void displayMSGOnError(Context context){
+        displayMSG(context,Messages.msgOnError);
+    }
+
+
+    public static void displayMSG(Context context,String message){
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+    }
 }

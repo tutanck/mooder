@@ -157,12 +157,14 @@ public class SignupActivity extends AppCompatActivity {
                                             new MoodClient() {
                                                 @Override
                                                 public void onReply(int rpcode, String message, JSONObject result) {
+                                                    Log.i("SignupActivity", "onReply : 'result:" + result + "' message :'"+message+"'");
                                                     FormManager.validFormOnInputChange(formValidationMap,entry.getKey(),submitBtn);
                                                 }
 
                                                 @Override
                                                 public void onIssue(int iscode) {
-                                                    msgTV.setText(Messages.remote.get(iscode));
+                                                    Log.i("SignupActivity", "onIssue : '" + iscode + "'");
+                                                    FormManager.showMsgTV(msgTV,Messages.remote.get(iscode),getResources());
                                                 }
 
                                                 @Override
@@ -179,7 +181,7 @@ public class SignupActivity extends AppCompatActivity {
                                                     Log.e("SignupActivity", "onErrorResponse : '" + error + "'", error);
                                                     FormManager.dropProgressBar(checkingPB);
                                                     FormManager.dropMsgTV(msgTV);
-                                                    Utils.displayMSGOnNetworkError(meGod);
+                                                    Messages.displayMSGOnNetworkError(meGod);
                                                 }
                                             }).setTag(entry.getKey())
                                     );

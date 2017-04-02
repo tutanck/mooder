@@ -79,16 +79,4 @@ public class Utils {
     }
 
 
-    public static void displayMSGOnNetworkError(Context context){
-        displayMSG(context,Messages.msgOnNetworkError);
-    }
-
-    public static void displayMSGOnError(Context context){
-        displayMSG(context,Messages.msgOnError);
-    }
-
-
-    public static void displayMSG(Context context,String message){
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-    }
 }

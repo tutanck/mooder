@@ -20,6 +20,7 @@ public class Butler {
      * @param mc
      * @param response */
     public static void popNserve(Context context,MoodClient mc, String response){
+        Log.i("Butler", "popNserve : '" + response + "'");
         try {
             JSONObject json = new JSONObject(response);
 
@@ -31,7 +32,7 @@ public class Butler {
                     break;
                 default:
                     Log.e("Butler/popNserve","Unknown response's nature. Can't process it... nan mais Allo");
-                    Utils.displayMSGOnError(context);
+                    Messages.displayMSGOnError(context);
                     break;
             }
         } catch (JSONException e) {

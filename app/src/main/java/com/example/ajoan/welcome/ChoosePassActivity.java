@@ -22,7 +22,10 @@ import com.android.volley.toolbox.StringRequest;
 import com.example.ajoan.MyApp;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.AppRouting;
+import com.example.ajoan.utils.Butler;
 import com.example.ajoan.utils.FormManager;
+import com.example.ajoan.utils.Messages;
+import com.example.ajoan.utils.MoodClient;
 import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
 
@@ -51,6 +54,7 @@ public class ChoosePassActivity extends AppCompatActivity {
     private final static String USERPASS2 ="confirm";
 
     private Map<String, JSONObject> inputsMap = new HashMap<>();
+    private TextView passMSGTV;
     private Button submitBtn;
 
     @Override
@@ -84,6 +88,8 @@ public class ChoosePassActivity extends AppCompatActivity {
                     ).put("rule", Rules.PASS_RULE)
                             .put("manual", "Il faut au moins 8 caractères dont au moins un chiffre, une Majuscule et une minuscule")
             );
+
+            passMSGTV=((TextView) inputsMap.get(USERPASS).get("msg"));//convenience
 
             inputsMap.put(USERPASS2, FormManager.initInput(
                     (TextView) input2.findViewById(R.id.inputTitle),
@@ -153,20 +159,34 @@ public class ChoosePassActivity extends AppCompatActivity {
                 queue.add(new StringRequest(
                         Request.Method.POST,
                         reqStr,
-                        new Response.Listener<String>() {
+                        new MoodClient() {
                             @Override
-                            public void onResponse(String response) {
-                                onTheFly = false;
-                                Log.i("ChoosePassActivity","onResponse : "+response);
+                            public void onReply(int rpcode, String message, JSONObject result) {
+                                Log.i("ChoosePassActivity", "onReply : '"+rpcode+"'-> 'result:" + result + "' message :"+message+"'");
                                 Bundle b = new Bundle();
                                 b.putString(LoginActivity.USERNAME,getIntent().getStringExtra(USERNAME));
-
                                 startActivity(
                                         Utils.intent(new Intent(meGod, LoginActivity.class), null, null)
                                                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
                                                 .putExtras(b)
-                                        );
+                                );
+                            }
+
+                            @Override
+                            public void onIssue(int iscode) {
+                                Log.i("ChoosePassActivity", "onIssue : '" + iscode + "'");
+                                if(iscode==-43)
+                                    FormManager.showMsgTV(passMSGTV,Messages.remote.get(iscode),getResources());
+                                else
+                                    Messages.displayMSG(meGod,Messages.remote.get(iscode));
+                            }
+
+                            @Override
+                            public void onResponse(String response) {
+                                onTheFly = false;
+                                Log.i("ChoosePassActivity","onResponse : "+response);
                                 FormManager.enableButton(submitBtn);
+                                Butler.popNserve(meGod,this,response);
                             }
                         },
                         new Response.ErrorListener() {
@@ -174,7 +194,7 @@ public class ChoosePassActivity extends AppCompatActivity {
                             public void onErrorResponse(VolleyError error) {
                                 Log.e("ChoosePassActivity", "onErrorResponse : '" + error + "'", error);
                                 onTheFly = false;
-                                Utils.displayMSGOnNetworkError(meGod);
+                                Messages.displayMSGOnNetworkError(meGod);
                                 FormManager.enableButton(submitBtn);
                             }
                         }));

@@ -23,6 +23,7 @@ import com.example.ajoan.MyApp;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.AppRouting;
 import com.example.ajoan.utils.FormManager;
+import com.example.ajoan.utils.Messages;
 import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
 
@@ -34,7 +35,6 @@ import java.util.Map;
 
 import static android.text.InputType.TYPE_CLASS_TEXT;
 import static android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
-import static android.text.InputType.TYPE_TEXT_VARIATION_PERSON_NAME;
 
 public class ForgotPassActivity extends AppCompatActivity {
 
@@ -145,7 +145,7 @@ public class ForgotPassActivity extends AppCompatActivity {
                             public void onErrorResponse(VolleyError error) {
                                 Log.e("ForgotPassActivity", "onErrorResponse : '" + error + "'", error);
                                 onTheFly = false;
-                                Utils.displayMSGOnNetworkError(meGod);
+                                Messages.displayMSGOnNetworkError(meGod);
                                 FormManager.enableButton(submitBtn);
                             }
                         }));

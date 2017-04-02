@@ -27,7 +27,10 @@ import com.example.ajoan.MyApp;
 import com.example.ajoan.maps.MapsActivity;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.AppRouting;
+import com.example.ajoan.utils.Butler;
 import com.example.ajoan.utils.FormManager;
+import com.example.ajoan.utils.Messages;
+import com.example.ajoan.utils.MoodClient;
 import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
 
@@ -57,6 +60,8 @@ public class LoginActivity extends AppCompatActivity {
     private final static String USERPASS ="pass";
 
     private Map<String, JSONObject> inputsMap = new HashMap<>();
+    private TextView passMSGTV;
+    private TextView emailMSGTV;
     private Map<String, Boolean> formValidationMap = new HashMap<>();
     private Button submitBtn;
 
@@ -131,6 +136,9 @@ public class LoginActivity extends AppCompatActivity {
                     ).put("rule", Rules.NON_EMPTY_RULE)
             );
 
+            emailMSGTV =((TextView) inputsMap.get(USERNAME).get("msg"));//convenience
+            emailMSGTV.setWidth((int)Utils.pixelsInDP(300,getResources()));
+
             inputsMap.put(USERPASS, FormManager.initInput(
                     (TextView) input2.findViewById(R.id.inputTitle),
                     "Mot de passe",
@@ -141,6 +149,8 @@ public class LoginActivity extends AppCompatActivity {
                     (TextView) input2.findViewById(R.id.inputMSG)
                     ).put("rule",Rules.NON_EMPTY_RULE)
             );
+
+            passMSGTV =((TextView) inputsMap.get(USERPASS).get("msg"));//convenience
 
             String storedUname = getIntent().getStringExtra(USERNAME);
             if(storedUname!=null) {
@@ -189,7 +199,7 @@ public class LoginActivity extends AppCompatActivity {
 
             try {
                 String reqStr = Utils.compileRequestURL(submitListener,
-                        USERNAME+"->"+((EditText)inputsMap.get(USERNAME).get("input")),
+                        USERNAME+"->"+((EditText)inputsMap.get(USERNAME).get("input")).getText(),
                         USERPASS+"->"+((EditText)inputsMap.get(USERPASS).get("input")).getText(),
                         DID+"->"+android_id
                 );
@@ -199,21 +209,35 @@ public class LoginActivity extends AppCompatActivity {
                 queue.add(new StringRequest(
                         Request.Method.POST,
                         reqStr,
-                        new Response.Listener<String>() {
+                        new MoodClient() {
                             @Override
-                            public void onResponse(String response) {
-                                onTheFly = false;
-                                Log.i("LoginActivity","onResponse : "+response);
+                            public void onReply(int rpcode, String message, JSONObject result) {
+
+                                //todo store user id and response content username
+
                                 startActivity(
                                         Utils.intent(new Intent(meGod, MapsActivity.class), null, null)
                                                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
                                 );
+                                Messages.displayMSG(meGod,"YATA");
 
-                                //todo verifier qu il clear bien les previous task ::later
-                                //todo store user id and response content username
+                            }
 
-                                //todo finish all prev
+                            @Override
+                            public void onIssue(int iscode) {
+                                if(iscode==-33)
+                                    FormManager.showMsgTV(emailMSGTV,Messages.remote.get(iscode),getResources());
+                                else
+                                    Messages.displayMSG(meGod,Messages.remote.get(iscode));
+                            }
+
+                            @Override
+                            public void onResponse(String response) {
+                                Log.i("LoginActivity","onResponse : "+response);
+                                onTheFly = false;
                                 FormManager.enableButton(submitBtn);
+                                Butler.popNserve(meGod,this,response);
+
                             }
                         },
                         new Response.ErrorListener() {
@@ -221,7 +245,7 @@ public class LoginActivity extends AppCompatActivity {
                             public void onErrorResponse(VolleyError error) {
                                 Log.e("LoginActivity", "onErrorResponse : '" + error + "'", error);
                                 onTheFly = false;
-                                Utils.displayMSGOnNetworkError(meGod);
+                                Messages.displayMSGOnNetworkError(meGod);
                                 FormManager.enableButton(submitBtn);
                             }
                         }));

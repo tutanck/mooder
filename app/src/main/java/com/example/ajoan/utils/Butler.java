@@ -31,8 +31,7 @@ public class Butler {
                         json.getInt("rpcode"),json.optString("message"),json.optJSONObject("result"));
                     break;
                 default:
-                    Log.e("Butler/popNserve","Unknown response's nature. Can't process it... nan mais Allo");
-                    Messages.displayMSGOnError(context);
+                    Messages.displayMSGOnError(context, new Exception("Butler/popNserve : Unknown response's nature. Can't process it... nan mais Allo"));
                     break;
             }
         } catch (JSONException e) {

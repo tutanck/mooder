@@ -169,7 +169,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 initLocationLongitude = ((MyApp) getApplication()).mLastLocation.getLongitude();
 
                 RequestQueue queue = Volley.newRequestQueue(this); // Instantiate the RequestQueue
-                // Request a string response from the provided URL
+                // ReQstr a string response from the provided URL
                 StringRequest stringRequest = new StringRequest(
                         Request.Method.GET,
                         DataIledefranceFr.baseUrl

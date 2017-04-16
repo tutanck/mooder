@@ -14,18 +14,20 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
 import com.example.ajoan.MyApp;
 import com.example.ajoan.maps.R;
-import com.example.ajoan.utils.AppRouting;
+import com.example.ajoan.utils.WebAppDirectory;
 import com.example.ajoan.utils.FormManager;
 import com.example.ajoan.utils.Messages;
 import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
+import com.example.ajoan.utils.volleyr.errorsresponses.BasicNetworkErrorResponse;
+import com.example.ajoan.utils.reqstr.AppRouterNotLoadedException;
+import com.example.ajoan.utils.reqstr.InvalidWebServiceDescriptionException;
+import com.example.ajoan.utils.reqstr.ReQstr;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,8 +43,10 @@ public class ForgotPassActivity extends AppCompatActivity {
     private Context meGod = this;
 
     private RequestQueue queue;
+    private ReQstr reqstr;
+
     private boolean onTheFly = false;
-    private String submitListener = AppRouting.serverAdr+AppRouting.forgotPass;
+    private String submitListener = WebAppDirectory.serverUrl + WebAppDirectory.forgotPass;
 
     //external inputs
     public final static String USERMAIL = "usermail";
@@ -57,6 +61,7 @@ public class ForgotPassActivity extends AppCompatActivity {
         setContentView(R.layout.activity_forgot_pass);
 
         queue = ((MyApp)getApplication()).queue;
+        reqstr = ((MyApp)getApplication()).reqstr;
 
         RelativeLayout title = (RelativeLayout)findViewById(R.id.title);
         RelativeLayout input1 = (RelativeLayout)findViewById(R.id.input1);
@@ -114,44 +119,49 @@ public class ForgotPassActivity extends AppCompatActivity {
             FormManager.disableButton(submitBtn);
 
             try {
-                String reqStr = Utils.compileRequestURL(submitListener,
-                        USERMAIL +"->"+((EditText)inputsMap.get(USERMAIL).get("input"))
-                );
 
-                Log.i("ForgotPassActivity", "/submit : Sending this request:\n  -->" + reqStr);
+                Log.i("ForgotPassActivity", "/submit : Sending request toserver");
 
-                queue.add(new StringRequest(
-                        Request.Method.POST,
-                        reqStr,
-                        new Response.Listener<String>() {
-                            @Override
-                            public void onResponse(String response) {
-                                onTheFly = false;
-                                Log.i("ForgotPassActivity","onResponse : "+response);
-                                startActivity(
-                                        Utils.intent(new Intent(meGod, LoginActivity.class), null, null)
-                                                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                                );
+                Response.Listener<String> mc =new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        onTheFly = false;
+                        Log.i("ForgotPassActivity","onResponse : "+response);
+                        startActivity(
+                                Utils.intent(new Intent(meGod, LoginActivity.class), null, null)
+                                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                        );
 
-                                //todo verifier qu il clear bien les previous task ::later
-                                //todo store user id and response content username
+                        //todo verifier qu il clear bien les previous task ::later
+                        //todo store user id and response content username
 
-                                //todo finish all prev
-                                FormManager.enableButton(submitBtn);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.e("ForgotPassActivity", "onErrorResponse : '" + error + "'", error);
-                                onTheFly = false;
-                                Messages.displayMSGOnNetworkError(meGod);
-                                FormManager.enableButton(submitBtn);
-                            }
-                        }));
+                        //todo finish all prev
+                        FormManager.enableButton(submitBtn);
+                    }
+                };
+
+                Response.ErrorListener err=new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("ForgotPassActivity", "onErrorResponse : '" + error + "'", error);
+                        onTheFly = false;
+                        Messages.displayMSGOnNetworkError(meGod,error);
+                        FormManager.enableButton(submitBtn);
+                    }
+                };
+
+
+                new ReQstr(WebAppDirectory.serverUrl,WebAppDirectory.routerUrl,queue,new BasicNetworkErrorResponse(meGod))
+                        .send(
+                                WebAppDirectory.forgotPass,
+                                mc,err,
+                                null,
+                                USERMAIL +"->"+((EditText)inputsMap.get(USERMAIL).get("input"))
+                        );
+
                 onTheFly = true;
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
+            } catch (Exception e) {
+                Messages.displayMSGOnError(meGod,e);
             }
         }
     }

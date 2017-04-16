@@ -14,20 +14,22 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
 import com.example.ajoan.MyApp;
 import com.example.ajoan.maps.R;
-import com.example.ajoan.utils.AppRouting;
+import com.example.ajoan.utils.WebAppDirectory;
 import com.example.ajoan.utils.Butler;
 import com.example.ajoan.utils.FormManager;
 import com.example.ajoan.utils.Messages;
 import com.example.ajoan.utils.MoodClient;
 import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
+import com.example.ajoan.utils.volleyr.errorsresponses.BasicNetworkErrorResponse;
+import com.example.ajoan.utils.reqstr.AppRouterNotLoadedException;
+import com.example.ajoan.utils.reqstr.InvalidWebServiceDescriptionException;
+import com.example.ajoan.utils.reqstr.ReQstr;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,8 +45,10 @@ public class ChoosePassActivity extends AppCompatActivity {
     private Context meGod = this;
 
     private RequestQueue queue;
+    private ReQstr reqstr;
+
     private boolean onTheFly = false;
-    private String submitListener = AppRouting.serverAdr+AppRouting.signup;
+    private String submitListener = WebAppDirectory.serverUrl + WebAppDirectory.signup;
 
     //external inputs
     public final static String USERMAIL = "email";
@@ -63,6 +67,7 @@ public class ChoosePassActivity extends AppCompatActivity {
         setContentView(R.layout.activity_welcome);
 
         queue = ((MyApp)getApplication()).queue;
+        reqstr = ((MyApp)getApplication()).reqstr;
 
         RelativeLayout title = (RelativeLayout)findViewById(R.id.title);
         RelativeLayout input1 = (RelativeLayout)findViewById(R.id.input1);
@@ -148,59 +153,64 @@ public class ChoosePassActivity extends AppCompatActivity {
             FormManager.disableButton(submitBtn);
 
             try {
-                String reqStr = Utils.compileRequestURL(submitListener,
-                        USERMAIL+"->"+getIntent().getStringExtra(USERMAIL),
-                        USERNAME+"->"+getIntent().getStringExtra(USERNAME),
-                        USERPASS+"->"+((EditText)inputsMap.get(USERPASS).get("input")).getText()
-                );
 
-                Log.i("ChoosePassActivity", "/submit : Sending this request:\n  -->" + reqStr);
+                Log.i("ChoosePassActivity", "/submit : Sending this request to server" );
 
-                queue.add(new StringRequest(
-                        Request.Method.POST,
-                        reqStr,
-                        new MoodClient() {
-                            @Override
-                            public void onReply(int rpcode, String message, JSONObject result) {
-                                Log.i("ChoosePassActivity", "onReply : '"+rpcode+"'-> 'result:" + result + "' message :"+message+"'");
-                                Bundle b = new Bundle();
-                                b.putString(LoginActivity.USERNAME,getIntent().getStringExtra(USERNAME));
-                                startActivity(
-                                        Utils.intent(new Intent(meGod, LoginActivity.class), null, null)
-                                                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                                                .putExtras(b)
-                                );
-                            }
+                MoodClient mc = new MoodClient() {
+                    @Override
+                    public void onReply(int rpcode, String message, JSONObject result) {
+                        Log.i("ChoosePassActivity", "onReply : '"+rpcode+"'-> 'result:" + result + "' message :"+message+"'");
+                        Bundle b = new Bundle();
+                        b.putString(LoginActivity.USERNAME,getIntent().getStringExtra(USERNAME));
+                        startActivity(
+                                Utils.intent(new Intent(meGod, LoginActivity.class), null, null)
+                                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                        .putExtras(b)
+                        );
+                    }
 
-                            @Override
-                            public void onIssue(int iscode) {
-                                Log.i("ChoosePassActivity", "onIssue : '" + iscode + "'");
-                                if(iscode==-43)
-                                    FormManager.showMsgTV(passMSGTV,Messages.remote.get(iscode),getResources());
-                                else
-                                    Messages.displayMSG(meGod,Messages.remote.get(iscode));
-                            }
+                    @Override
+                    public void onIssue(int iscode) {
+                        Log.i("ChoosePassActivity", "onIssue : '" + iscode + "'");
+                        if(iscode==-43)
+                            FormManager.showMsgTV(passMSGTV,Messages.remote.get(iscode),getResources());
+                        else
+                            Messages.displayMSG(meGod,Messages.remote.get(iscode));
+                    }
 
-                            @Override
-                            public void onResponse(String response) {
-                                onTheFly = false;
-                                Log.i("ChoosePassActivity","onResponse : "+response);
-                                FormManager.enableButton(submitBtn);
-                                Butler.popNserve(meGod,this,response);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.e("ChoosePassActivity", "onErrorResponse : '" + error + "'", error);
-                                onTheFly = false;
-                                Messages.displayMSGOnNetworkError(meGod);
-                                FormManager.enableButton(submitBtn);
-                            }
-                        }));
+                    @Override
+                    public void onResponse(String response) {
+                        onTheFly = false;
+                        Log.i("ChoosePassActivity","onResponse : "+response);
+                        FormManager.enableButton(submitBtn);
+                        Butler.popNserve(meGod,this,response);
+                    }
+                };
+                Response.ErrorListener err = new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("ChoosePassActivity", "onErrorResponse : '" + error + "'", error);
+                        onTheFly = false;
+                        Messages.displayMSGOnNetworkError(meGod,error);
+                        FormManager.enableButton(submitBtn);
+                    }
+                };
+
+
+
+                new ReQstr(WebAppDirectory.serverUrl,WebAppDirectory.routerUrl,queue,new BasicNetworkErrorResponse(meGod))
+                        .send(
+                                WebAppDirectory.forgotPass,//// TODO: 16/04/2017
+                                mc,err,
+                                null,
+                                USERMAIL+"->"+getIntent().getStringExtra(USERMAIL),
+                                USERNAME+"->"+getIntent().getStringExtra(USERNAME),
+                                USERPASS+"->"+((EditText)inputsMap.get(USERPASS).get("input")).getText()
+                        );
+
                 onTheFly = true;
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
+            } catch (Exception e) {
+                Messages.displayMSGOnError(meGod,e);
             }
         }
     }

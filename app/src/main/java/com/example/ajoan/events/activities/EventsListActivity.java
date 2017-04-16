@@ -144,7 +144,7 @@ public class EventsListActivity extends AppCompatActivity implements EventsListF
 
             if (((MyApp) getApplication()).mLastLocation != null){
                 RequestQueue queue = Volley.newRequestQueue(this); // Instantiate the RequestQueue
-                // Request a string response from the provided URL
+                // ReQstr a string response from the provided URL
                 StringRequest stringRequest = new StringRequest(Request.Method.GET,
                         DataIledefranceFr.baseUrl
                                 + ((MyApp) getApplication()).mLastLocation.getLatitude() + "%2C+"

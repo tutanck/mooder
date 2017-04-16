@@ -7,6 +7,9 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.widget.Toast;
 
+import com.example.ajoan.MyApp;
+import com.example.ajoan.utils.reqstr.ReQstr;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -44,39 +47,5 @@ public class Utils {
 
         return intent;
     }
-
-
-
-
-    public static String compileRequestURL(
-            String url,
-            Map<String,String> params
-    ){
-        String reqStr = url;
-        if(params!=null && params.size()>0)
-            reqStr+="?";
-        int i=1;
-        for(Map.Entry<String,String> entry : params.entrySet()) {
-            reqStr += entry.getKey() + "=" + entry.getValue();
-            if(i++ <params.size())
-                reqStr+="&";
-        }
-        return reqStr;
-    }
-
-    public static String compileRequestURL(
-            String url,
-            String... params
-    ){
-        HashMap<String,String> paramsMap = new HashMap<>();
-        for(String str : params) {
-            if (!str.contains("->"))
-                throw new RuntimeException("compileRequestURL : bad string param... abort url compilation");
-            String[]entry = str.split("->");
-            paramsMap.put(entry[0],entry[1]); //no performance here
-        }
-        return compileRequestURL(url,paramsMap);
-    }
-
 
 }

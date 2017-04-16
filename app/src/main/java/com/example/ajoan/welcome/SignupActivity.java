@@ -17,20 +17,22 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
 import com.example.ajoan.MyApp;
 import com.example.ajoan.maps.R;
-import com.example.ajoan.utils.AppRouting;
+import com.example.ajoan.utils.WebAppDirectory;
 import com.example.ajoan.utils.Butler;
 import com.example.ajoan.utils.FormManager;
 import com.example.ajoan.utils.Messages;
 import com.example.ajoan.utils.MoodClient;
 import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
+import com.example.ajoan.utils.volleyr.errorsresponses.BasicNetworkErrorResponse;
+import com.example.ajoan.utils.reqstr.AppRouterNotLoadedException;
+import com.example.ajoan.utils.reqstr.InvalidWebServiceDescriptionException;
+import com.example.ajoan.utils.reqstr.ReQstr;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,6 +56,7 @@ public class SignupActivity extends AppCompatActivity {
     private Button submitBtn;
 
     private RequestQueue queue;
+    private ReQstr reqstr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +64,8 @@ public class SignupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_welcome);
 
         queue = ((MyApp)getApplication()).queue;
+
+        reqstr = ((MyApp)getApplication()).reqstr;
 
         RelativeLayout title = (RelativeLayout)findViewById(R.id.title);
         RelativeLayout input1 = (RelativeLayout)findViewById(R.id.input1);
@@ -101,7 +106,7 @@ public class SignupActivity extends AppCompatActivity {
                     TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_EMAIL_ADDRESS,
                     (ProgressBar) input1.findViewById(R.id.inputPB),
                     (TextView) input1.findViewById(R.id.inputMSG)
-                    ).put("url", AppRouting.serverAdr + AppRouting.emailChk)
+                    ).put("url", WebAppDirectory.serverUrl + WebAppDirectory.emailChk)
                             .put("rule", Rules.USERNMAIL_RULE)
             );
 
@@ -113,7 +118,7 @@ public class SignupActivity extends AppCompatActivity {
                     TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PERSON_NAME,
                     (ProgressBar) input2.findViewById(R.id.inputPB),
                     (TextView) input2.findViewById(R.id.inputMSG)
-                    ).put("url", AppRouting.serverAdr + AppRouting.usernameChk)
+                    ).put("url", WebAppDirectory.serverUrl + WebAppDirectory.usernameChk)
                             .put("rule", Rules.USERNAME_RULE)
                             .put("manual", "Un nom d'utilisateur contient au moins 3 caractères et commence par une lettre")
             );
@@ -144,51 +149,48 @@ public class SignupActivity extends AppCompatActivity {
                                     FormManager.showProgressBar(checkingPB);
                                     FormManager.showMsgTV(msgTV,"Vérification en cours",getResources());
 
-                                    String reqStr = Utils.compileRequestURL(
-                                            entry.getValue().getString("url"),
-                                            new String[]{entry.getKey() + "->" + s.toString()}
-                                    );
-                                    Log.i("SignupActivity", "/onTextChanged : Sending this request:\n  -->" + reqStr);
+                                    Log.i("SignupActivity", "/onTextChanged : Sending request to server");
 
+                                    MoodClient mc = new MoodClient() {
+                                        @Override
+                                        public void onReply(int rpcode, String message, JSONObject result) {
+                                            Log.i("SignupActivity", "onReply : 'result:" + result + "' message :'"+message+"'");
+                                            FormManager.validFormOnInputChange(formValidationMap,entry.getKey(),submitBtn);
+                                        }
 
-                                    queue.add((StringRequest) new StringRequest(
-                                            Request.Method.GET,
-                                            reqStr,
-                                            new MoodClient() {
-                                                @Override
-                                                public void onReply(int rpcode, String message, JSONObject result) {
-                                                    Log.i("SignupActivity", "onReply : 'result:" + result + "' message :'"+message+"'");
-                                                    FormManager.validFormOnInputChange(formValidationMap,entry.getKey(),submitBtn);
-                                                }
+                                        @Override
+                                        public void onIssue(int iscode) {
+                                            Log.i("SignupActivity", "onIssue : '" + iscode + "'");
+                                            FormManager.showMsgTV(msgTV,Messages.remote.get(iscode),getResources());
+                                        }
 
-                                                @Override
-                                                public void onIssue(int iscode) {
-                                                    Log.i("SignupActivity", "onIssue : '" + iscode + "'");
-                                                    FormManager.showMsgTV(msgTV,Messages.remote.get(iscode),getResources());
-                                                }
+                                        @Override
+                                        public void onResponse(String response) {
+                                            Log.i("SignupActivity", "onResponse : '" + response + "'");
+                                            FormManager.dropProgressBar(checkingPB);
+                                            FormManager.dropMsgTV(msgTV);
+                                            Butler.popNserve(meGod,this,response);
+                                        }
+                                    };
+                                    Response.ErrorListener err = new Response.ErrorListener() {
+                                        @Override
+                                        public void onErrorResponse(VolleyError error) {
+                                            Log.e("SignupActivity", "onErrorResponse : '" + error + "'", error);
+                                            FormManager.dropProgressBar(checkingPB);
+                                            FormManager.dropMsgTV(msgTV);
+                                            Messages.displayMSGOnNetworkError(meGod,error);
+                                        }
+                                    };
 
-                                                @Override
-                                                public void onResponse(String response) {
-                                                    Log.i("SignupActivity", "onResponse : '" + response + "'");
-                                                    FormManager.dropProgressBar(checkingPB);
-                                                    FormManager.dropMsgTV(msgTV);
-                                                    Butler.popNserve(meGod,this,response);
-                                                }
-                                            },
-                                            new Response.ErrorListener() {
-                                                @Override
-                                                public void onErrorResponse(VolleyError error) {
-                                                    Log.e("SignupActivity", "onErrorResponse : '" + error + "'", error);
-                                                    FormManager.dropProgressBar(checkingPB);
-                                                    FormManager.dropMsgTV(msgTV);
-                                                    Messages.displayMSGOnNetworkError(meGod);
-                                                }
-                                            }).setTag(entry.getKey())
+                                    reqstr.send(
+                                            WebAppDirectory.signup,
+                                            mc,err,
+                                            entry.getKey(),
+                                            entry.getKey() + "->" + s.toString()
                                     );
 
-
-                                } catch (JSONException e) {
-                                    throw new RuntimeException(e);
+                                } catch (Exception e) {
+                                    Messages.displayMSGOnError(meGod,e);
                                 }
                             }
 
@@ -213,11 +215,10 @@ public class SignupActivity extends AppCompatActivity {
             startActivity(
                     Utils.intent(new Intent(meGod, ChoosePassActivity.class), null, null)
                             .putExtras(b)
-                    );
+            );
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
     }
-
-    //class end
+    à
 }

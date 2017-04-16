@@ -4,9 +4,11 @@ package com.example.ajoan.utils;
  * Created by Joan on 26/03/2017.
  */
 
-public class AppRouting {
+public class WebAppDirectory {
 
-    public static String serverAdr="http://192.168.1.91:8080/Essais0/";
+    public static String serverUrl ="http://192.168.1.91:8080/Essais0/";
+
+    public static String routerUrl ="http://192.168.1.91:8080/Essais0/";
 
     public static String emailChk="check/email";
 

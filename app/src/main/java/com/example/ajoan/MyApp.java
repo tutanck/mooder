@@ -5,6 +5,9 @@ import android.location.Location;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.example.ajoan.utils.WebAppDirectory;
+import com.example.ajoan.utils.reqstr.ReQstr;
+import com.example.ajoan.utils.volleyr.errorsresponses.BasicNetworkErrorResponse;
 
 import org.json.JSONObject;
 
@@ -19,6 +22,7 @@ import java.util.Map;
 public class MyApp extends Application{
 
     public RequestQueue queue;
+    public ReQstr reqstr;
 
     public static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 0;
 
@@ -42,5 +46,6 @@ public class MyApp extends Application{
     public void onCreate() {
         super.onCreate();
         queue = Volley.newRequestQueue(getApplicationContext());
+        reqstr= new ReQstr(WebAppDirectory.serverUrl,WebAppDirectory.routerUrl,queue,new BasicNetworkErrorResponse(getApplicationContext()));
     }
 }

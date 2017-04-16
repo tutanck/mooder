@@ -18,19 +18,20 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
 import com.example.ajoan.MyApp;
 import com.example.ajoan.maps.MapsActivity;
 import com.example.ajoan.maps.R;
-import com.example.ajoan.utils.AppRouting;
+import com.example.ajoan.utils.WebAppDirectory;
 import com.example.ajoan.utils.Butler;
 import com.example.ajoan.utils.FormManager;
 import com.example.ajoan.utils.Messages;
 import com.example.ajoan.utils.MoodClient;
+import com.example.ajoan.utils.reqstr.AppRouterNotLoadedException;
+import com.example.ajoan.utils.reqstr.InvalidWebServiceDescriptionException;
+import com.example.ajoan.utils.reqstr.ReQstr;
 import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
 
@@ -49,8 +50,10 @@ public class LoginActivity extends AppCompatActivity {
     private Context meGod = this;
 
     private RequestQueue queue;
+    private ReQstr reqstr;
+
     private boolean onTheFly = false;
-    private String submitListener = AppRouting.serverAdr+AppRouting.signin;
+    private String submitListener = WebAppDirectory.serverUrl + WebAppDirectory.signin;
 
     public final static String DID ="did";
     private String android_id;
@@ -71,6 +74,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_welcome);
 
         queue = ((MyApp)getApplication()).queue;
+        reqstr = ((MyApp)getApplication()).reqstr;
 
         RelativeLayout title = (RelativeLayout)findViewById(R.id.title);
         RelativeLayout input1 = (RelativeLayout)findViewById(R.id.input1);
@@ -198,63 +202,60 @@ public class LoginActivity extends AppCompatActivity {
             FormManager.disableButton(submitBtn);
 
             try {
-                String reqStr = Utils.compileRequestURL(submitListener,
+                Log.i("LoginActivity", "/submit : Sending this request to server" );
+
+                MoodClient mc = new MoodClient() {
+                    @Override
+                    public void onReply(int rpcode, String message, JSONObject result) {
+                        //todo store user id and response content username
+                        startActivity(
+                                Utils.intent(new Intent(meGod, MapsActivity.class), null, null)
+                                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                        );
+                        Messages.displayMSG(meGod,"YATA");
+                    }
+
+                    @Override
+                    public void onIssue(int iscode) {
+                        if(iscode==-33)
+                            FormManager.showMsgTV(emailMSGTV,Messages.remote.get(iscode),getResources());
+                        else
+                            Messages.displayMSG(meGod,Messages.remote.get(iscode));
+                    }
+
+                    @Override
+                    public void onResponse(String response) {
+                        Log.i("LoginActivity","onResponse : "+response);
+                        onTheFly = false;
+                        FormManager.enableButton(submitBtn);
+                        Butler.popNserve(meGod,this,response);
+                    }
+                };
+                Response.ErrorListener err= new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("LoginActivity", "onErrorResponse : '" + error + "'", error);
+                        onTheFly = false;
+                        Messages.displayMSGOnNetworkError(meGod,error);
+                        FormManager.enableButton(submitBtn);
+                    }
+                };
+
+                reqstr.send(
+                        WebAppDirectory.signin,
+                        mc,err,
+                        null,
                         USERNAME+"->"+((EditText)inputsMap.get(USERNAME).get("input")).getText(),
                         USERPASS+"->"+((EditText)inputsMap.get(USERPASS).get("input")).getText(),
                         DID+"->"+android_id
                 );
 
-                Log.i("LoginActivity", "/submit : Sending this request:\n  -->" + reqStr);
-
-                queue.add(new StringRequest(
-                        Request.Method.POST,
-                        reqStr,
-                        new MoodClient() {
-                            @Override
-                            public void onReply(int rpcode, String message, JSONObject result) {
-
-                                //todo store user id and response content username
-
-                                startActivity(
-                                        Utils.intent(new Intent(meGod, MapsActivity.class), null, null)
-                                                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                                );
-                                Messages.displayMSG(meGod,"YATA");
-
-                            }
-
-                            @Override
-                            public void onIssue(int iscode) {
-                                if(iscode==-33)
-                                    FormManager.showMsgTV(emailMSGTV,Messages.remote.get(iscode),getResources());
-                                else
-                                    Messages.displayMSG(meGod,Messages.remote.get(iscode));
-                            }
-
-                            @Override
-                            public void onResponse(String response) {
-                                Log.i("LoginActivity","onResponse : "+response);
-                                onTheFly = false;
-                                FormManager.enableButton(submitBtn);
-                                Butler.popNserve(meGod,this,response);
-
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.e("LoginActivity", "onErrorResponse : '" + error + "'", error);
-                                onTheFly = false;
-                                Messages.displayMSGOnNetworkError(meGod);
-                                FormManager.enableButton(submitBtn);
-                            }
-                        }));
                 onTheFly = true;
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
+
+            } catch (Exception e) {
+                Messages.displayMSGOnError(meGod,e);
             }
         }
     }
 
-    //class end
 }

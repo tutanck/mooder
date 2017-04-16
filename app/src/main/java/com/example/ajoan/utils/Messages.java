@@ -1,6 +1,7 @@
 package com.example.ajoan.utils;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.util.HashMap;
@@ -45,11 +46,13 @@ public class Messages {
     }
 
 
-    public static void displayMSGOnNetworkError(Context context){
+    public static void displayMSGOnNetworkError(Context context,Exception e){
+        Log.e("MSGOnNetworkError" , context+" encountred network issues : "+e, e);
         displayMSG(context, msgOnNetworkError);
     }
 
-    public static void displayMSGOnError(Context context){
+    public static void displayMSGOnError(Context context,Exception e){
+        Log.e("MSGOnError" , context+" encountred issues : "+e, e);
         displayMSG(context, msgOnError);
     }
 

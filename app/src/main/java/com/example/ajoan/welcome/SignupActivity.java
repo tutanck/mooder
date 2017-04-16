@@ -220,5 +220,5 @@ public class SignupActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
     }
-    à
+
 }

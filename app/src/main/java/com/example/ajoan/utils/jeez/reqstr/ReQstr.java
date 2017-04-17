@@ -68,6 +68,25 @@ public class ReQstr {
             Response.Listener<String> responseListener,
             Response.ErrorListener errorListener,
             Object tag,
+            String... urlParams
+    ) {
+        try{
+            send(serviceID,responseListener,errorListener,tag,strTabToMap(urlParams));
+        } catch (Exception e) {
+            errorListener.onErrorResponse(new VolleyError(e));
+        }
+    }
+
+
+
+    /**
+     * @param serviceID the service name on client side
+     * @param urlParams */
+    public void send(
+            String serviceID,
+            Response.Listener<String> responseListener,
+            Response.ErrorListener errorListener,
+            Object tag,
             Map<String,String> urlParams
     ) {
         try {
@@ -96,20 +115,6 @@ public class ReQstr {
         } catch (Exception e) {
             errorListener.onErrorResponse(new VolleyError(e));
         }
-    }
-
-
-    /**
-     * @param serviceID the service name on client side
-     * @param urlParams */
-    public void send(
-            String serviceID,
-            Response.Listener<String> responseListener,
-            Response.ErrorListener errorListener,
-            Object tag,
-            String... urlParams
-    ) throws AppRouterNotLoadedException, JSONException, InvalidWebServiceDescriptionException, InvalidRequestException {
-        send(serviceID,responseListener,errorListener,tag,strTabToMap(urlParams));
     }
 
 
@@ -176,7 +181,6 @@ public class ReQstr {
 
 
 
-
     private int getHTTPM(
             String serviceID,
             JSONObject serviceInfos
@@ -196,6 +200,7 @@ public class ReQstr {
     }
 
 
+
     private String getMainPath(
             String serviceID,
             JSONObject serviceInfos
@@ -205,6 +210,7 @@ public class ReQstr {
             throw new InvalidWebServiceDescriptionException("Undefined URL for the WebService '"+serviceID+"'");;
         return WebAppDirectory.serverUrl+paths.getString(0);
     }
+
 
 
     private String compileRequestURL(
@@ -227,13 +233,14 @@ public class ReQstr {
     }
 
 
+
     private Map<String,String> strTabToMap(
-            String... params
-    ){
+            String... valuedParams
+    ) throws InvalidRequestException {
         HashMap<String,String> paramsMap = new HashMap<>();
-        for(String str : params) {
+        for(String str : valuedParams) {
             if (!str.contains("->"))
-                throw new RuntimeException("compileRequestURL : bad string param.. abort url compilation");
+                throw new InvalidRequestException("valued parameter '"+str+"' does not contains the key-value separator '->'");
             String[]entry = str.split("->");
             paramsMap.put(entry[0],entry[1]); //no performance here
         }

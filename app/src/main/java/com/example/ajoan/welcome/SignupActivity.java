@@ -166,7 +166,6 @@ public class SignupActivity extends AppCompatActivity {
                                                 Log.i("SignupActivity", "onResponse : '" + response + "'");
                                                 FormManager.dropProgressBar(checkingPB);
                                                 FormManager.dropMsgTV(msgTV);
-
                                                 BlackButler.popNserve(meGod,this,response);
                                             } catch (Exception e) {
                                                 Messages.displayMSGOnError(meGod,e);

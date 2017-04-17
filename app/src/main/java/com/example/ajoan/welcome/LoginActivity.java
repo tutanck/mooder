@@ -227,7 +227,6 @@ public class LoginActivity extends AppCompatActivity {
                             Log.i("LoginActivity","onResponse : "+response);
                             onTheFly = false;
                             FormManager.enableButton(submitBtn);
-
                             BlackButler.popNserve(meGod,this,response);
                         } catch (Exception e) {
                             Messages.displayMSGOnError(meGod,e);

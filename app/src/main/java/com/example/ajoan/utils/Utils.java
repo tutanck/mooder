@@ -1,17 +1,10 @@
 package com.example.ajoan.utils;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.util.Log;
 import android.util.TypedValue;
-import android.widget.Toast;
 
-import com.example.ajoan.MyApp;
-import com.example.ajoan.utils.reqstr.ReQstr;
-
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

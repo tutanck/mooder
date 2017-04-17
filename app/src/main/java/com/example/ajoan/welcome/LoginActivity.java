@@ -25,13 +25,11 @@ import com.example.ajoan.MyApp;
 import com.example.ajoan.maps.MapsActivity;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.WebAppDirectory;
-import com.example.ajoan.utils.Butler;
+import com.example.ajoan.utils.blackbutler.BlackButler;
 import com.example.ajoan.utils.FormManager;
 import com.example.ajoan.utils.Messages;
 import com.example.ajoan.utils.MoodClient;
-import com.example.ajoan.utils.reqstr.AppRouterNotLoadedException;
-import com.example.ajoan.utils.reqstr.InvalidWebServiceDescriptionException;
-import com.example.ajoan.utils.reqstr.ReQstr;
+import com.example.ajoan.utils.jeez.reqstr.ReQstr;
 import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
 
@@ -225,10 +223,15 @@ public class LoginActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(String response) {
-                        Log.i("LoginActivity","onResponse : "+response);
-                        onTheFly = false;
-                        FormManager.enableButton(submitBtn);
-                        Butler.popNserve(meGod,this,response);
+                        try{
+                            Log.i("LoginActivity","onResponse : "+response);
+                            onTheFly = false;
+                            FormManager.enableButton(submitBtn);
+
+                            BlackButler.popNserve(meGod,this,response);
+                        } catch (Exception e) {
+                            Messages.displayMSGOnError(meGod,e);
+                        }
                     }
                 };
                 Response.ErrorListener err= new Response.ErrorListener() {

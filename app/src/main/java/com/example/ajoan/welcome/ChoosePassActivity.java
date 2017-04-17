@@ -20,16 +20,13 @@ import com.android.volley.VolleyError;
 import com.example.ajoan.MyApp;
 import com.example.ajoan.maps.R;
 import com.example.ajoan.utils.WebAppDirectory;
-import com.example.ajoan.utils.Butler;
+import com.example.ajoan.utils.blackbutler.BlackButler;
 import com.example.ajoan.utils.FormManager;
 import com.example.ajoan.utils.Messages;
 import com.example.ajoan.utils.MoodClient;
 import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
-import com.example.ajoan.utils.volleyr.errorsresponses.BasicNetworkErrorResponse;
-import com.example.ajoan.utils.reqstr.AppRouterNotLoadedException;
-import com.example.ajoan.utils.reqstr.InvalidWebServiceDescriptionException;
-import com.example.ajoan.utils.reqstr.ReQstr;
+import com.example.ajoan.utils.jeez.reqstr.ReQstr;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -180,12 +177,17 @@ public class ChoosePassActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(String response) {
-                        onTheFly = false;
-                        Log.i("ChoosePassActivity","onResponse : "+response);
-                        FormManager.enableButton(submitBtn);
-                        Butler.popNserve(meGod,this,response);
+                        try{
+                            onTheFly = false;
+                            Log.i("ChoosePassActivity","onResponse : "+response);
+                            FormManager.enableButton(submitBtn);
+                            BlackButler.popNserve(meGod,this,response);
+                        } catch (Exception e) {
+                            Messages.displayMSGOnError(meGod,e);
+                        }
                     }
                 };
+
                 Response.ErrorListener err = new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
@@ -198,15 +200,14 @@ public class ChoosePassActivity extends AppCompatActivity {
 
 
 
-                new ReQstr(WebAppDirectory.serverUrl,WebAppDirectory.routerUrl,queue,new BasicNetworkErrorResponse(meGod))
-                        .send(
-                                WebAppDirectory.forgotPass,//// TODO: 16/04/2017
-                                mc,err,
-                                null,
-                                USERMAIL+"->"+getIntent().getStringExtra(USERMAIL),
-                                USERNAME+"->"+getIntent().getStringExtra(USERNAME),
-                                USERPASS+"->"+((EditText)inputsMap.get(USERPASS).get("input")).getText()
-                        );
+                reqstr.send(
+                        WebAppDirectory.signup,
+                        mc,err,
+                        null,
+                        USERMAIL+"->"+getIntent().getStringExtra(USERMAIL),
+                        USERNAME+"->"+getIntent().getStringExtra(USERNAME),
+                        USERPASS+"->"+((EditText)inputsMap.get(USERPASS).get("input")).getText()
+                );
 
                 onTheFly = true;
             } catch (Exception e) {

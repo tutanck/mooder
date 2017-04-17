@@ -24,10 +24,7 @@ import com.example.ajoan.utils.FormManager;
 import com.example.ajoan.utils.Messages;
 import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
-import com.example.ajoan.utils.volleyr.errorsresponses.BasicNetworkErrorResponse;
-import com.example.ajoan.utils.reqstr.AppRouterNotLoadedException;
-import com.example.ajoan.utils.reqstr.InvalidWebServiceDescriptionException;
-import com.example.ajoan.utils.reqstr.ReQstr;
+import com.example.ajoan.utils.jeez.reqstr.ReQstr;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,7 +43,6 @@ public class ForgotPassActivity extends AppCompatActivity {
     private ReQstr reqstr;
 
     private boolean onTheFly = false;
-    private String submitListener = WebAppDirectory.serverUrl + WebAppDirectory.forgotPass;
 
     //external inputs
     public final static String USERMAIL = "usermail";
@@ -150,14 +146,12 @@ public class ForgotPassActivity extends AppCompatActivity {
                     }
                 };
 
-
-                new ReQstr(WebAppDirectory.serverUrl,WebAppDirectory.routerUrl,queue,new BasicNetworkErrorResponse(meGod))
-                        .send(
-                                WebAppDirectory.forgotPass,
-                                mc,err,
-                                null,
-                                USERMAIL +"->"+((EditText)inputsMap.get(USERMAIL).get("input"))
-                        );
+                reqstr.send(
+                        WebAppDirectory.forgotPass,
+                        mc,err,
+                        null,
+                        USERMAIL +"->"+((EditText)inputsMap.get(USERMAIL).get("input"))
+                );
 
                 onTheFly = true;
             } catch (Exception e) {
@@ -165,6 +159,4 @@ public class ForgotPassActivity extends AppCompatActivity {
             }
         }
     }
-
-    //class end
 }

@@ -6,19 +6,21 @@ package com.example.ajoan.utils;
 
 public class WebAppDirectory {
 
-    public static String serverUrl ="http://192.168.1.91:8080/Essais0/";
+    public static String serverUrl ="http://192.168.1.91:8080/Essais0";
 
-    public static String routerUrl ="http://192.168.1.91:8080/Essais0/";
+    public static String routerUrl ="http://192.168.1.91:8080/Essais0/jz/app/routes";
 
-    public static String emailChk="check/email";
+    public static String emailChk="check_email";
 
-    public static String usernameChk="check/username";
+    public static String usernameChk="check_username";
 
     public static String signup="signup";
 
     public static String signin="signin";
 
-    public static String forgotPass="yooooooooooooo";
+    public static String signout="signout";
+
+    public static String forgotPass="recover_account";
 
 
 }

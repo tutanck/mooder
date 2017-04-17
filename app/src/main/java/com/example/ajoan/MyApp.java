@@ -6,15 +6,12 @@ import android.location.Location;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.example.ajoan.utils.WebAppDirectory;
-import com.example.ajoan.utils.reqstr.ReQstr;
+import com.example.ajoan.utils.jeez.reqstr.ReQstr;
 import com.example.ajoan.utils.volleyr.errorsresponses.BasicNetworkErrorResponse;
 
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**

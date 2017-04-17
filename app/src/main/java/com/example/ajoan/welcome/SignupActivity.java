@@ -22,17 +22,14 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.example.ajoan.MyApp;
 import com.example.ajoan.maps.R;
+import com.example.ajoan.utils.blackbutler.BlackButler;
 import com.example.ajoan.utils.WebAppDirectory;
-import com.example.ajoan.utils.Butler;
 import com.example.ajoan.utils.FormManager;
 import com.example.ajoan.utils.Messages;
 import com.example.ajoan.utils.MoodClient;
 import com.example.ajoan.utils.Rules;
 import com.example.ajoan.utils.Utils;
-import com.example.ajoan.utils.volleyr.errorsresponses.BasicNetworkErrorResponse;
-import com.example.ajoan.utils.reqstr.AppRouterNotLoadedException;
-import com.example.ajoan.utils.reqstr.InvalidWebServiceDescriptionException;
-import com.example.ajoan.utils.reqstr.ReQstr;
+import com.example.ajoan.utils.jeez.reqstr.ReQstr;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -106,7 +103,7 @@ public class SignupActivity extends AppCompatActivity {
                     TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_EMAIL_ADDRESS,
                     (ProgressBar) input1.findViewById(R.id.inputPB),
                     (TextView) input1.findViewById(R.id.inputMSG)
-                    ).put("url", WebAppDirectory.serverUrl + WebAppDirectory.emailChk)
+                    ).put("url", WebAppDirectory.emailChk)
                             .put("rule", Rules.USERNMAIL_RULE)
             );
 
@@ -118,7 +115,7 @@ public class SignupActivity extends AppCompatActivity {
                     TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PERSON_NAME,
                     (ProgressBar) input2.findViewById(R.id.inputPB),
                     (TextView) input2.findViewById(R.id.inputMSG)
-                    ).put("url", WebAppDirectory.serverUrl + WebAppDirectory.usernameChk)
+                    ).put("url", WebAppDirectory.usernameChk)
                             .put("rule", Rules.USERNAME_RULE)
                             .put("manual", "Un nom d'utilisateur contient au moins 3 caractères et commence par une lettre")
             );
@@ -139,9 +136,8 @@ public class SignupActivity extends AppCompatActivity {
 
                             @Override
                             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                                queue.cancelAll(entry.getKey()); //cancel all the previous this input related requests
-
                                 try {
+                                    queue.cancelAll(entry.getKey()); //cancel all the previous this input related requests
 
                                     if (!FormManager.validInput(formValidationMap,entry.getKey(),entry.getValue(),meGod,submitBtn))
                                         return; //warning message already displayed, cant go further
@@ -154,7 +150,7 @@ public class SignupActivity extends AppCompatActivity {
                                     MoodClient mc = new MoodClient() {
                                         @Override
                                         public void onReply(int rpcode, String message, JSONObject result) {
-                                            Log.i("SignupActivity", "onReply : 'result:" + result + "' message :'"+message+"'");
+                                            Log.i("SignupActivity", "onReply : result:'" + result + "' - message :'"+message+"'");
                                             FormManager.validFormOnInputChange(formValidationMap,entry.getKey(),submitBtn);
                                         }
 
@@ -166,12 +162,18 @@ public class SignupActivity extends AppCompatActivity {
 
                                         @Override
                                         public void onResponse(String response) {
-                                            Log.i("SignupActivity", "onResponse : '" + response + "'");
-                                            FormManager.dropProgressBar(checkingPB);
-                                            FormManager.dropMsgTV(msgTV);
-                                            Butler.popNserve(meGod,this,response);
+                                            try {
+                                                Log.i("SignupActivity", "onResponse : '" + response + "'");
+                                                FormManager.dropProgressBar(checkingPB);
+                                                FormManager.dropMsgTV(msgTV);
+
+                                                BlackButler.popNserve(meGod,this,response);
+                                            } catch (Exception e) {
+                                                Messages.displayMSGOnError(meGod,e);
+                                            }
                                         }
                                     };
+
                                     Response.ErrorListener err = new Response.ErrorListener() {
                                         @Override
                                         public void onErrorResponse(VolleyError error) {
@@ -183,9 +185,9 @@ public class SignupActivity extends AppCompatActivity {
                                     };
 
                                     reqstr.send(
-                                            WebAppDirectory.signup,
+                                            entry.getValue().getString("url"),
                                             mc,err,
-                                            entry.getKey(),
+                                            entry.getKey(),//tag
                                             entry.getKey() + "->" + s.toString()
                                     );
 
